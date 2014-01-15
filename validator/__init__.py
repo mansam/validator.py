@@ -53,6 +53,8 @@ def Not(validator):
         not_lambda.err_message = "must not be blank"
     elif validator.__name__ == "range_lambda":
         not_lambda.err_message = "must not fall between %s and %s" % (validator.start, validator.end)
+    elif validator.__name__ == "class_lambda":
+        not_lambda.err_message = "must not be an instance of %s or its subclasses" % validator.base_class
 
     return not_lambda
 
@@ -164,6 +166,31 @@ def Required(field, dictionary):
     """
 
     return (field in dictionary)
+
+def Classy(base_class):
+    """
+    Use to specify that the
+    value of the key being
+    validated must be an instance
+    of the passed in base class
+    or its subclasses.
+
+    # Example:
+        validations = {
+            "field": [Classy(basestring)]
+        }
+        passes = {"field": ""} # is a <'str'>, subclass of basestring
+        fails  = {"field": str} # is a <'type'>
+
+
+    """
+
+    def class_lambda(value):
+        return isinstance(value, base_class)
+
+    class_lambda.base_class = base_class
+    class_lambda.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
+    return class_lambda
 
 def validate(validation, dictionary):
     """
@@ -337,4 +364,19 @@ class TestValidator(object):
             "exclusive_in_range": 2,
             "exclusive_out_of_range": 1
         }
-        assert validate(validator, test_case)
+        assert validate(validator, test_case)[0]
+
+    def test_classy_validator(self):
+        validator = {
+            "classy": [Required, Classy(unicode)],
+            "subclassy": [Required, Classy(basestring)],
+            "not_classy": [Required, Not(Classy(unicode))],
+            "not_subclassy": [Required, Not(Classy(basestring))]
+        }
+        test_case = {
+            "classy": u"unicode_string",
+            "subclassy": u"unicode_string",
+            "not_classy": r'raw_string',
+            "not_subclassy": 3
+        }
+        assert validate(validator, test_case)[0]
