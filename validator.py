@@ -43,7 +43,6 @@ def Not(validator):
     def not_lambda(value):
         return not validator(value)
 
-    not_err_message = ""
     if validator.__name__ == "eq_lambda":
         not_lambda.err_message = "must not be equal to '%s'" % validator.value
     elif validator.__name__ == "truth_lambda":
