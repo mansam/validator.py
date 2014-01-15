@@ -41,8 +41,10 @@ fails = {
 }
 print validate(rules, fails)
 # (False,
-#  {'bar': ['must be True-equivalent value'],
-#  'baz': ["must be one of ['spam', 'eggs', 'bacon']"],
+#  {
 #  'foo': ["must be equal to '123'"],
-#  'qux': ['must not fall between 1 and 100']})
+#  'bar': ['must be True-equivalent value'],
+#  'baz': ["must be one of ['spam', 'eggs', 'bacon']"],
+#  'qux': ['must not fall between 1 and 100']
+#  })
 ```
