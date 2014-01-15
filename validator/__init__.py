@@ -57,6 +57,8 @@ def Not(validator):
         not_lambda.err_message = "must not fall between %s and %s" % (validator.start, validator.end)
     elif validator.__name__ == "class_lambda":
         not_lambda.err_message = "must not be an instance of %s or its subclasses" % validator.base_class
+    elif validator.__name__ == "pattern_lambda":
+        not_lambda.err_message = "must not match regex pattern %s" % validator.pattern
 
     return not_lambda
 
