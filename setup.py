@@ -9,7 +9,7 @@ setup(
     url='http://pypi.python.org/pypi/validator.py/',
     license='LICENSE',
     description='A library for validating that dictionary values meet certain sets of parameters. Much like form validators, but for dicts.',
-    long_description=open('README').read()
+    long_description=open('README.md').read()
 )
 
 
