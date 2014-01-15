@@ -217,6 +217,7 @@ def validate(validation, dictionary):
         if Required in validation[key]:
             if not Required(key, dictionary):
                 errors[key] = "must be present"
+                continue
         for v in validation[key]:
             if not v == Required:
                 valid = v(dictionary[key])
