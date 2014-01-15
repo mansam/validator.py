@@ -5,6 +5,11 @@ A library for validating that dictionary values meet certain sets of parameters.
 
 ## Usage Example
 
+First, install it from PyPI.
+
+    pip install validator.py
+
+
 ```python
 
 from validator import Required, Not, Truthy, Blank, Range, Equals, In, validate
