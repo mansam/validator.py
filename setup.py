@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='validator.py',
-    version='0.2.2',
+    version='0.2.3',
     author='Samuel "mansam" Lucidi',
     author_email="mansam@csh.rit.edu",
     packages=['validator'],
