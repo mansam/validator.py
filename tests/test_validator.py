@@ -111,14 +111,16 @@ class TestValidator(object):
             "test_equals":  [Not(Equals("one"))],
             "test_not_not": [Not(Not(Truthy()))],
             "test_in":      [Not(In(['one', 'two']))],
-            "test_range":   [Not(Range(1, 10))]
+            "test_range":   [Not(Range(1, 10))],
+            "test_pattern": [Not(Pattern("\d\d\d"))]
         }
         test_case = {
             "test_truthy": False,
             "test_equals": "two",
             "test_not_not": True,
             "test_in": "three",
-            "test_range": 11
+            "test_range": 11,
+            "test_pattern": "abc"
         }
         assert validate(validator, test_case)[0]
 
@@ -149,5 +151,16 @@ class TestValidator(object):
             "subclassy": u"unicode_string",
             "not_classy": r'raw_string',
             "not_subclassy": 3
+        }
+        assert validate(validator, test_case)[0]
+
+    def test_pattern_validator(self):
+        validator = {
+            "match": [Required, Pattern('\d\d\%')],
+            "no_match": [Required, Not(Pattern('\d\d\%'))]
+        }
+        test_case = {
+            "match": "39%",
+            "no_match": "ab%"
         }
         assert validate(validator, test_case)[0]

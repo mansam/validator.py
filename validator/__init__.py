@@ -8,6 +8,8 @@ Author: Samuel Lucidi <slucidi@newstex.com>
 
 """
 
+import re
+
 def In(collection):
     """
     Use to specify that the
@@ -191,6 +193,31 @@ def Classy(base_class):
     class_lambda.base_class = base_class
     class_lambda.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
     return class_lambda
+
+def Pattern(pattern):
+    """
+    Use to specify that the
+    value of the key being
+    validated must match the
+    pattern provided to the
+    validator.
+
+    # Example:
+        validations = {
+            "field": [Pattern('\d\d\%')]
+        }
+        passes = {"field": "30%"}
+        fails  = {"field": "30"}
+
+    """
+
+    compiled = re.compile(pattern)
+
+    def pattern_lambda(value):
+        return compiled.match(value)
+    pattern_lambda.pattern = pattern
+    pattern_lambda.err_message = "must match regex pattern %s" % pattern
+    return pattern_lambda
 
 def validate(validation, dictionary):
     """
