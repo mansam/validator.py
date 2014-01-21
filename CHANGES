@@ -1,5 +1,6 @@
-v0.1.0, 1/14/2013 -- Initial release.
-v0.2.0, 1/15/2013 -- Added Classy validator and tests
-v0.2.1, 1/15/2013 -- Fixed validate continuing on a field after failing a Required validation 
-v0.2.2, 1/15/2013 -- Added Pattern regex validator and tests 
-v0.2.3, 1/15/2013 -- Added missing Not(Pattern()) error message 
+v0.1.0, 1/14/2014 -- Initial release.
+v0.2.0, 1/15/2014 -- Added Classy validator and tests
+v0.2.1, 1/15/2014 -- Fixed validate continuing on a field after failing a Required validation 
+v0.2.2, 1/15/2014 -- Added Pattern regex validator and tests 
+v0.2.3, 1/15/2014 -- Added missing Not(Pattern()) error message 
+v0.3.1, 1/21/2014 -- Renamed Classy to InstanceOf, added SubclassOf 
