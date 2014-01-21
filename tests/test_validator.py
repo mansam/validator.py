@@ -62,7 +62,6 @@ class TestValidator(object):
         assert not validate(validator, int_value)[0]
         assert not validate(validator, bool_value)[0]
 
-
     def test_in_validator(self):
         validator = {
             "truthiness": [Truthy()],
@@ -139,18 +138,29 @@ class TestValidator(object):
         }
         assert validate(validator, test_case)[0]
 
-    def test_classy_validator(self):
+    def test_instanceof_validator(self):
         validator = {
-            "classy": [Required, Classy(unicode)],
-            "subclassy": [Required, Classy(basestring)],
-            "not_classy": [Required, Not(Classy(unicode))],
-            "not_subclassy": [Required, Not(Classy(basestring))]
+            "classy": [Required, InstanceOf(unicode)],
+            "subclassy": [Required, InstanceOf(basestring)],
+            "not_classy": [Required, Not(InstanceOf(unicode))],
+            "not_subclassy": [Required, Not(InstanceOf(basestring))]
         }
         test_case = {
             "classy": u"unicode_string",
             "subclassy": u"unicode_string",
             "not_classy": r'raw_string',
             "not_subclassy": 3
+        }
+        assert validate(validator, test_case)[0]
+
+    def test_subclassof_validator(self):
+        validator = {
+            "is_subclass": [Required, SubclassOf(basestring)],
+            "not_subclass": [Required, Not(SubclassOf(basestring))],
+        }
+        test_case = {
+            "is_subclass": unicode,
+            "not_subclass": int
         }
         assert validate(validator, test_case)[0]
 

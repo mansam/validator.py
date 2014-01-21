@@ -55,10 +55,12 @@ def Not(validator):
         not_lambda.err_message = "must not be blank"
     elif validator.__name__ == "range_lambda":
         not_lambda.err_message = "must not fall between %s and %s" % (validator.start, validator.end)
-    elif validator.__name__ == "class_lambda":
+    elif validator.__name__ == "instanceof_lambda":
         not_lambda.err_message = "must not be an instance of %s or its subclasses" % validator.base_class
     elif validator.__name__ == "pattern_lambda":
         not_lambda.err_message = "must not match regex pattern %s" % validator.pattern
+    elif validator.__name__ == "subclassof_lambda":
+        not_lambda.err_message = "must not be a subclass of %s" % validator.base_class
 
     return not_lambda
 
@@ -171,7 +173,7 @@ def Required(field, dictionary):
 
     return (field in dictionary)
 
-def Classy(base_class):
+def InstanceOf(base_class):
     """
     Use to specify that the
     value of the key being
@@ -181,20 +183,41 @@ def Classy(base_class):
 
     # Example:
         validations = {
-            "field": [Classy(basestring)]
+            "field": [InstanceOf(basestring)]
         }
         passes = {"field": ""} # is a <'str'>, subclass of basestring
         fails  = {"field": str} # is a <'type'>
 
-
     """
 
-    def class_lambda(value):
+    def instanceof_lambda(value):
         return isinstance(value, base_class)
 
-    class_lambda.base_class = base_class
-    class_lambda.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
-    return class_lambda
+    instanceof_lambda.base_class = base_class
+    instanceof_lambda.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
+    return instanceof_lambda
+
+def SubclassOf(base_class):
+    """
+    Use to specify that the
+    value of the key being
+    validated must be a subclass
+    of the passed in base class.
+
+    # Example:
+        validations = {
+            "field": [SubclassOf(basestring)]
+        }
+        passes = {"field": str} # is a subclass of basestring
+        fails  = {"field": int}
+    """
+
+    def subclassof_lambda(class_):
+        return issubclass(class_, base_class)
+
+    subclassof_lambda.base_class = base_class
+    subclassof_lambda.err_message = "must be a subclass of %s" % base_class.__name__
+    return subclassof_lambda
 
 def Pattern(pattern):
     """
