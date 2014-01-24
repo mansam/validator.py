@@ -8,7 +8,10 @@ Author: Samuel Lucidi <slucidi@newstex.com>
 
 """
 
+__version__ = "0.4.0"
+
 import re
+from collections import defaultdict
 
 def In(collection):
     """
@@ -244,6 +247,56 @@ def Pattern(pattern):
     pattern_lambda.err_message = "must match regex pattern %s" % pattern
     return pattern_lambda
 
+def Then(validation):
+    """
+    Special validator for use as
+    part of the If rule.
+    If the conditional part of the validation
+    passes, then this is used to apply another
+    set of dependent rules.
+
+    # Example:
+        validations = {
+            "foo": [If(Equals(1), Then({"bar": [Equals(2)]}))]
+        }
+        passes = {"foo": 1, "bar": 2}
+        also_passes = {"foo": 2, "bar": 3}
+        fails = {"foo": 1, "bar": 3}
+    """
+
+    def then_lambda(dictionary):
+        return validate(validation, dictionary)
+
+    return then_lambda
+        
+
+def If(validator_lambda, then_lambda):
+    """
+    Special conditional validator.
+    If the validator passed as the first
+    parameter to this function passes,
+    then a second set of rules will be
+    applied to the dictionary.
+
+    # Example:
+        validations = {
+            "foo": [If(Equals(1), Then({"bar": [Equals(2)]}))]
+        }
+        passes = {"foo": 1, "bar": 2}
+        also_passes = {"foo": 2, "bar": 3}
+        fails = {"foo": 1, "bar": 3}
+    """
+
+    def if_lambda(value, dictionary):
+        conditional = False
+        dependent = None
+        if validator_lambda(value):
+            conditional = True
+            dependent = then_lambda(dictionary)
+        return conditional, dependent
+
+    return if_lambda
+
 def validate(validation, dictionary):
     """
     Validate that a dictionary passes a set of
@@ -264,20 +317,33 @@ def validate(validation, dictionary):
 
     """
 
-    errors = {}
+    errors = defaultdict(list)
     for key in validation:
         if Required in validation[key]:
             if not Required(key, dictionary):
                 errors[key] = "must be present"
                 continue
         for v in validation[key]:
+            # skip Required, since it was already
+            # handled before this point.
             if not v == Required:
-                valid = v(dictionary[key])
-                if not valid:
-                    if not key in errors:
-                        errors[key] = []
-                    errors[key].append(v.err_message)
+                # special handling for the
+                # If(Then()) form
+                if v.__name__ == "if_lambda":
+                    conditional, dependent = v(dictionary[key], dictionary)
+                    # if the If() condition passed and there were errors
+                    # in the second set of rules, then add them to the
+                    # list of errors for the key with the condtional
+                    # as a nested dictionary of errors.
+                    if conditional and dependent[1]:
+                        errors[key].append(dependent[1])
+                # handling for normal validators
+                else:
+                    valid = v(dictionary[key])
+                    if not valid:
+                        msg = getattr(v, "err_message", "failed validation")
+                        errors[key].append(msg)
     if len(errors) > 0:
-        return False, errors
+        return False, dict(errors)
     else:
         return True, {}

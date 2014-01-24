@@ -174,3 +174,21 @@ class TestValidator(object):
             "no_match": "ab%"
         }
         assert validate(validator, test_case)[0]
+
+    def test_conditional_validator(self):
+        passes = {
+            "if_true_passes": [Required, If(Equals(1), Then({"dependent_passes": [Equals(1)]}))],
+            "if_false_passes": [Required, If(Equals(1), Then({"dependent_fails": [Equals(1)]}))],
+        }
+        fails = {
+            "if_true_fails": [Required, If(Equals(1), Then({"dependent_fails": [Equals(1)]}))]
+        }
+        test_case = {
+            "if_true_passes": 1,
+            "if_false_passes": 2,
+            "if_true_fails": 1,
+            "dependent_passes": 1,
+            "dependent_fails": 2
+        }
+        assert validate(passes, test_case)[0]
+        assert not validate(fails, test_case)[0]
