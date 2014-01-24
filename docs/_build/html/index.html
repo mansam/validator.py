@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to validator.py’s documentation! &mdash; validator.py 0.4.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="validator.py 0.4.0 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">validator.py 0.4.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-validator-py-s-documentation">
+<h1>Welcome to validator.py&#8217;s documentation!<a class="headerlink" href="#welcome-to-validator-py-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<p>A library for validating that dictionary values meet certain sets of
+parameters. Much like form validators, but for dicts.</p>
+<div class="section" id="usage-example">
+<h2>Usage Example<a class="headerlink" href="#usage-example" title="Permalink to this headline">¶</a></h2>
+<p>First, install it from PyPI.</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install validator.py
+</pre></div>
+</div>
+<div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">validator</span> <span class="kn">import</span> <span class="n">Required</span><span class="p">,</span> <span class="n">Not</span><span class="p">,</span> <span class="n">Truthy</span><span class="p">,</span> <span class="n">Blank</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Equals</span><span class="p">,</span> <span class="n">In</span><span class="p">,</span> <span class="n">validate</span>
+
+<span class="c"># let&#39;s say that my dictionary needs to meet the following rules...</span>
+<span class="n">rules</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Equals</span><span class="p">(</span><span class="mi">123</span><span class="p">)],</span>
+    <span class="s">&quot;bar&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Truthy</span><span class="p">()],</span>
+    <span class="s">&quot;baz&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">In</span><span class="p">([</span><span class="s">&quot;spam&quot;</span><span class="p">,</span> <span class="s">&quot;eggs&quot;</span><span class="p">,</span> <span class="s">&quot;bacon&quot;</span><span class="p">])],</span>
+    <span class="s">&quot;qux&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">Not</span><span class="p">(</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">))]</span> <span class="c"># by default, Range is inclusive</span>
+<span class="p">}</span>
+
+<span class="c"># then this following dict would pass:</span>
+<span class="n">passes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">123</span><span class="p">,</span>
+    <span class="s">&quot;bar&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="c"># or a non-empty string, or a non-zero int, etc...</span>
+    <span class="s">&quot;baz&quot;</span><span class="p">:</span> <span class="s">&quot;spam&quot;</span><span class="p">,</span>
+    <span class="s">&quot;qux&quot;</span><span class="p">:</span> <span class="mi">101</span>
+<span class="p">}</span>
+<span class="k">print</span> <span class="n">validate</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">passes</span><span class="p">)</span>
+<span class="c"># (True, {})</span>
+
+<span class="c"># but this one would fail</span>
+<span class="n">fails</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">321</span><span class="p">,</span>
+    <span class="s">&quot;bar&quot;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="c"># or 0, or [], or an empty string, etc...</span>
+    <span class="s">&quot;baz&quot;</span><span class="p">:</span> <span class="s">&quot;barf&quot;</span><span class="p">,</span>
+    <span class="s">&quot;qux&quot;</span><span class="p">:</span> <span class="mi">99</span>
+<span class="p">}</span>
+<span class="k">print</span> <span class="n">validate</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">fails</span><span class="p">)</span>
+<span class="c"># (False,</span>
+<span class="c">#  {</span>
+<span class="c">#  &#39;foo&#39;: [&quot;must be equal to &#39;123&#39;&quot;],</span>
+<span class="c">#  &#39;bar&#39;: [&#39;must be True-equivalent value&#39;],</span>
+<span class="c">#  &#39;baz&#39;: [&quot;must be one of [&#39;spam&#39;, &#39;eggs&#39;, &#39;bacon&#39;]&quot;],</span>
+<span class="c">#  &#39;qux&#39;: [&#39;must not fall between 1 and 100&#39;]</span>
+<span class="c">#  })</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to validator.py&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#usage-example">Usage Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">validator.py 0.4.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Samuel Lucidi.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>
