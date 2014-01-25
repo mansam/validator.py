@@ -3,7 +3,7 @@ validator.py [![Build Status](https://travis-ci.org/mansam/validator.py.png?bran
 
 A library for validating that dictionary values meet certain sets of parameters. Much like form validators, but for dicts.
 
-## Documentation
+## [Documentation](http://validatorpy.readthedocs.org/en/latest/index.html)
 
 This README has some basic usage information, but more detailed documentation may be found at [ReadTheDocs](http://validatorpy.readthedocs.org/en/latest/index.html).
 
