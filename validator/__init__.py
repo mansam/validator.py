@@ -34,7 +34,7 @@ def In(collection):
         return (value in collection)
 
     in_lambda.collection = collection
-    in_lambda.err_message = "must be one of %s" % collection
+    in_lambda.err_message = "must be one of %r" % collection
     return in_lambda
 
 def Not(validator):
@@ -100,7 +100,7 @@ def Equals(obj):
         return value == obj
 
     eq_lambda.value = obj
-    eq_lambda.err_message = "must be equal to '%s'" % obj
+    eq_lambda.err_message = "must be equal to %r" % obj
     return eq_lambda
 
 def Blank():

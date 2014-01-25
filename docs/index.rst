@@ -78,9 +78,13 @@ To create a validation, you insert a list of callables into a validation diction
     (True, {})
     # Success!
 
-When ``validate`` got called in the example, the value of ``dictionary["foo"]`` got passed to lambda in the list, and ``since dictionary["foo"] == "bar"``, everything is good and the dictionary is considered valid!
+When ``validate`` got called in the example, the value of ``dictionary["foo"]`` got passed to lambda in the list, and since ``dictionary["foo"] == "bar"``, everything is good and the dictionary is considered valid!
 
 Writing your own callables is helpful in some cases, but ``validator.py`` helpfully provides a wide range of validations that should cover most of the common use cases.
+
+
+Available Validators
+--------------------
 
 The ``Equals`` validator
 ------------------------
@@ -106,7 +110,8 @@ In the event that it fails, it explains so clearly:
 
     >>> validate(validation, failure)
     (False, {"foo": ["must be equal to 'baz'"]})
-    
+
+
 The ``Required`` validator
 --------------------------
 
@@ -133,19 +138,243 @@ In the event that a key is missing:
     >>> validate(validation, failure)
     (False, {"foo": ["is missing"]})
 
+The ``Truthy`` validator
+--------------------------
+
+The ``Truthy`` validator checks that the dictionary value is something that Python treats as true. True, non-0 integers, non-empty lists, and strings all fall into this category.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": 1
+    }
+    validation = {
+        "foo": [Required, Truthy()]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+In the event that a key is not True-equivalent:
+
+.. code-block:: python
+
+    failure = {"foo": 0}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be True-equivalent value"]})
+
+The ``Range`` validator
+--------------------------
+
+The ``Range`` validator checks that the dictionary value falls inclusively between the start and end values passed to it.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": 10
+    }
+    validation = {
+        "foo": [Required, Range(1, 11)]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value falls outside the specified range:
+
+.. code-block:: python
+
+    failure = {"foo": 12}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must fall between 1 and 11"]})
+
+You can also have Range exclude its endpoints by changing the `inclusive` keyword argument to false.
+
+.. code-block:: python
+    
+    Range(1, 11, inclusive=False)
+
+The ``Pattern`` validator
+--------------------------
+
+The ``Pattern`` validator checks that the dictionary value matches the regex pattern that was passed to it.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": "30%"
+    }
+    validation = {
+        "foo": [Required, Pattern("\d\d\%")]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value doesn't match the regex:
+
+.. code-block:: python
+
+    failure = {"foo": "99.0"}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must match regex pattern \d\d\%"]})
+
+The ``In`` validator
+--------------------------
+
+The ``In`` validator checks that the dictionary value is a member of a collection passed to it.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": "spam"
+    }
+    validation = {
+        "foo": [Required, In(["spam", "eggs", "bacon"])]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value doesn't belong to the collection:
+
+.. code-block:: python
+
+    failure = {"foo": "beans"}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be one of ['spam', 'eggs', 'bacon']"]})
+
+The ``Not`` validator
+--------------------------
+
+The ``Not`` validator negates a validator that is passed to it and checks the dictionary value against that negated validator.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": "beans"
+    }
+    validation = {
+        "foo": [Required, Not(In(["spam", "eggs", "bacon"]))]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value doesn't pass the Not'd validator (meaning it would have passed the validator without the Not), then Not provides a helpfully negated version of the validator's error message:
+
+.. code-block:: python
+
+    failure = {"foo": "spam"}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must not be one of ['spam', 'eggs', 'bacon']"]})
+
+The ``InstanceOf`` validator
+----------------------------
+
+The ``InstanceOf`` validator checks that the dictionary value is an instance of the base class passed to InstanceOf, or an instance of one of its subclasses.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": u"i'm_a_unicode_string"
+    }
+    validation = {
+        "foo": [Required, InstanceOf(basestring)]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value isn't an instance of the base class or one of its subclasses:
+
+.. code-block:: python
+
+    failure = {"foo": object}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be an instance of basestring or its subclasses"]})
+
+The ``SubclassOf`` validator
+----------------------------
+
+The ``SubclassOf`` validator checks that the dictionary value is inherits from the base class passed to it. To be clear, this means that the dictionary value is expected to be a class, not an instance of a class.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": unicode
+    }
+    validation = {
+        "foo": [Required, InstanceOf(basestring)]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value isn't a subclass of base class or one of its subclasses (e.g. if it's an instance of that class or a subclass of something else):
+
+.. code-block:: python
+
+    failure = {"foo": "bar"}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be a subclass of basestring"]})
+
 Conditional Validations
 -----------------------
 
-Available Validators
---------------------
+In some cases you might want to apply some rules only if other validations pass. You can do that with the ``If(validator, Then(validation))`` construct that ``validator.py`` provides. For example, you might want to ensure that ``pet['name']`` is a cat's name, but only if ``pet['type'] == 'cat'``. To do this, you'd use the ``If`` validator on the key that serves as the condition for the other set of the rules.
+
+.. code-block:: python
+
+    pet = {
+        "name": "whiskers",
+        "type": "cat"
+    }
+    cat_name_rules = {
+        "name": [In(["whiskers", "fuzzy", "tiger"])]
+    }
+    dog_name_rules = {
+        "name": [In(["spot", "ace", "bandit"])]
+    }
+    validation = {
+        "type": [
+            If(Equals("cat"), Then(cat_name_rules)),
+            If(Equals("dog"), Then(dog_name_rules))
+        ]
+    }
+        
+    >>> validate(validation, pet)
+    (True, {})
+    # Success!
+
+A failed conditional validation will give you appropriately nested error messages so you know exactly where things went wrong.
+
+.. code-block:: python
+
+    pet = {"type":"cat", "name": "lily"}
+    >>> validate(validation, pet)
+    (False, {'type': [{'name': ["must be one of ['whiskers', 'fuzzy', 'tiger']"]}]})
+
+This is very powerful, but you'll need to take care that you don't create conflicting validations or cyclic validations-- ``validator.py`` won't be able to help you catch cycles.
+
+More Information
+-----------------------
+
+For more information, please visit http://github.com/mansam/validator.py or contact me at mansam@csh.rit.edu. You can also send me a message on freenode if you have any questions.
 
 .. |Build Status| image:: https://travis-ci.org/mansam/validator.py.png?branch=master
    :target: https://travis-ci.org/mansam/validator.py
 
-Indices and tables
+Indices
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
