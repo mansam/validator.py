@@ -63,7 +63,7 @@ Getting Started with Validations
 
 A validation (the set of rules used to test a dict) can be flat --consisting of just a single level of tests-- or it can contain additional conditionally nested validations. 
 
-To create a validation, you insert a list of callables into a validation dictionary for each key/value pair in the dictionary you want to validate. When you call ``validate` with the validation and your dictionary, each of those callables will be called with the respective value in your dictionary as their argument. If the callable returns ``True``, then you're good to go. For example:
+To create a validation, you insert a list of callables into a validation dictionary for each key/value pair in the dictionary you want to validate. When you call ``validate`` with the validation and your dictionary, each of those callables will be called with the respective value in your dictionary as their argument. If the callable returns ``True``, then you're good to go. For example:
 
 .. code-block:: python
 
