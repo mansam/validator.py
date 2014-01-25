@@ -13,7 +13,7 @@ About
 
 ``validator.py`` is a tool for ensuring that data conforms to certain sets of rules, called validations. A validation is essentially a schema for a dictionary, containing a list of rules for each key/value pair in the dictionary you want to validate. This is intended to fill a similar use case to form validations in WTForms or Rails, but for general sources of data, not just web forms. To get right on with it, here's a quick example of what this is for and how it works:
 
-.. code:: python
+.. code-block:: python
 
     from validator import Required, Not, Truthy, Blank, Range, Equals, In, validate
 
@@ -32,7 +32,7 @@ About
         "baz": "spam",
         "qux": 101
     }
-    >>> print validate(rules, passes)
+    >>> validate(rules, passes)
     (True, {}) 
 
     # but this one would fail
@@ -42,7 +42,7 @@ About
         "baz": "barf",
         "qux": 99
     }
-    >>> print validate(rules, fails)
+    >>> validate(rules, fails)
     (False, {
      'foo': ["must be equal to 123"],
      'bar': ['must be True-equivalent value'],
@@ -65,18 +65,18 @@ A validation (the set of rules used to test a dict) can be flat --consisting of 
 
 To create a validation, you insert a list of callables into a validation dictionary for each key/value pair in the dictionary you want to validate. When you call ``validate` with the validation and your dictionary, each of those callables will be called with the respective value in your dictionary as their argument. If the callable returns ``True``, then you're good to go. For example:
 
-.. code:: python
+.. code-block:: python
 
     dictionary = {
-		"foo": "bar"
-	}
-	validation = {
-		"foo": [lambda x: x == "bar"] 
-	}
-	
-	>>> validate(validation, dictionary)
-	(True, {})
-	# Success!
+        "foo": "bar"
+    }
+    validation = {
+        "foo": [lambda x: x == "bar"] 
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
 
 When ``validate`` got called in the example, the value of ``dictionary["foo"]`` got passed to lambda in the list, and ``since dictionary["foo"] == "bar"``, everything is good and the dictionary is considered valid!
 
@@ -87,51 +87,51 @@ The ``Equals`` validator
 
 The ``Equals`` validator just checks that the dictionary value matches the parameter to ``Equals``. We use it to rewrite our previous example more succinctly:
 
-.. code:: python
+.. code-block:: python
 
     dictionary = {
-		"foo": "bar"
-	}
-	validation = {
-		"foo": [Equals("bar")]
-	}
-	
-	>>> validate(validation, dictionary)
-	(True, {})
-	# Success!
+        "foo": "bar"
+    }
+    validation = {
+        "foo": [Equals("bar")]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
 
 In the event that it fails, it explains so clearly:
 
-.. code:: python
+.. code-block:: python
 
-	>>> validate(validation, failure)
-	(False, {"foo": ["must be equal to 'baz'"]})
-	
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be equal to 'baz'"]})
+    
 The ``Required`` validator
 --------------------------
 
 By default, a key is considered optional. A key that's in the validation but isn't in the dictionary under test just gets silently skipped. To make sure that a key is present, use the ``Required`` validator. Adding the ``Required`` validator to the list of rules for a key ensures that the key must be present in the dictionary. Unlike most of the other validators that ``validator.py`` provides, ``Required`` shouldn't be written with parentheses.
 
-.. code:: python
+.. code-block:: python
 
     dictionary = {
-		"foo": "bar"
-	}
-	validation = {
-		"foo": [Required, Equals("bar")]
-	}
-	
-	>>> validate(validation, dictionary)
-	(True, {})
-	# Success!
+        "foo": "bar"
+    }
+    validation = {
+        "foo": [Required, Equals("bar")]
+    }
+    
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
 
 In the event that a key is missing:
 
-.. code:: python
+.. code-block:: python
 
     failure = {}
-	>>> validate(validation, failure)
-	(False, {"foo": ["is missing"]})
+    >>> validate(validation, failure)
+    (False, {"foo": ["is missing"]})
 
 Conditional Validations
 -----------------------
