@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Validator.py : A library for validating that dictionary values meet certain sets of parameters. Much like form validators, but for dicts." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Validator.py</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mansam/validator.py">View on GitHub</a>
+
+          <h1 id="project_title">Validator.py</h1>
+          <h2 id="project_tagline">A library for validating that dictionary values meet certain sets of parameters. Much like form validators, but for dicts.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mansam/validator.py/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mansam/validator.py/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="validatorpy-" class="anchor" href="#validatorpy-"><span class="octicon octicon-link"></span></a>validator.py <a href="https://travis-ci.org/mansam/validator.py"><img src="https://travis-ci.org/mansam/validator.py.png?branch=master" alt="Build Status"></a>
+</h1>
+
+<p>This documentation is also available at <a href="http://validatorpy.readthedocs.org/en/latest/index.html">ReadTheDocs</a>.</p>
+
+<h2>
+<a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h2>
+
+<p><code>validator.py</code> is a tool for ensuring that data conforms to certain sets of rules, called validations. A validation is essentially a schema for a dictionary, containing a list of rules for each key/value pair in the dictionary you want to validate. This is intended to fill a similar use case to form validations in WTForms or Rails, but for general sources of data, not just web forms. To get right on with it, here's a quick example of what this is for and how it works:</p>
+
+<div class="highlight highlight-python"><pre><span class="kn">from</span> <span class="nn">validator</span> <span class="kn">import</span> <span class="n">Required</span><span class="p">,</span> <span class="n">Not</span><span class="p">,</span> <span class="n">Truthy</span><span class="p">,</span> <span class="n">Blank</span><span class="p">,</span> <span class="n">Range</span><span class="p">,</span> <span class="n">Equals</span><span class="p">,</span> <span class="n">In</span><span class="p">,</span> <span class="n">validate</span>
+
+<span class="c"># let's say that my dictionary needs to meet the following rules...</span>
+<span class="n">rules</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Equals</span><span class="p">(</span><span class="mi">123</span><span class="p">)],</span> <span class="c"># foo must be exactly equal to 123</span>
+    <span class="s">"bar"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Truthy</span><span class="p">()],</span>    <span class="c"># bar must be equivalent to True</span>
+    <span class="s">"baz"</span><span class="p">:</span> <span class="p">[</span><span class="n">In</span><span class="p">([</span><span class="s">"spam"</span><span class="p">,</span> <span class="s">"eggs"</span><span class="p">,</span> <span class="s">"bacon"</span><span class="p">])],</span> <span class="c"># baz must be one of these options</span>
+    <span class="s">"qux"</span><span class="p">:</span> <span class="p">[</span><span class="n">Not</span><span class="p">(</span><span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">))]</span> <span class="c"># qux must not be a number between 1 and 100 inclusive</span>
+<span class="p">}</span>
+
+<span class="c"># then this following dict would pass:</span>
+<span class="n">passes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="mi">123</span><span class="p">,</span>
+    <span class="s">"bar"</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span> <span class="c"># or a non-empty string, or a non-zero int, etc...</span>
+    <span class="s">"baz"</span><span class="p">:</span> <span class="s">"spam"</span><span class="p">,</span>
+    <span class="s">"qux"</span><span class="p">:</span> <span class="mi">101</span>
+<span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">passes</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span> 
+
+<span class="c"># but this one would fail</span>
+<span class="n">fails</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="mi">321</span><span class="p">,</span>
+    <span class="s">"bar"</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="c"># or 0, or [], or an empty string, etc...</span>
+    <span class="s">"baz"</span><span class="p">:</span> <span class="s">"barf"</span><span class="p">,</span>
+    <span class="s">"qux"</span><span class="p">:</span> <span class="mi">99</span>
+<span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">rules</span><span class="p">,</span> <span class="n">fails</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span>
+ <span class="s">'foo'</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be equal to 123"</span><span class="p">],</span>
+ <span class="s">'bar'</span><span class="p">:</span> <span class="p">[</span><span class="s">'must be True-equivalent value'</span><span class="p">],</span>
+ <span class="s">'baz'</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be one of ['spam', 'eggs', 'bacon']"</span><span class="p">],</span>
+ <span class="s">'qux'</span><span class="p">:</span> <span class="p">[</span><span class="s">'must not fall between 1 and 100'</span><span class="p">]</span>
+<span class="p">})</span>
+</pre></div>
+
+<p>Notice that the validation that passed just returned True and an empty <code>dict</code>, but the one that failed returned a tuple with False and a <code>dict</code> with a list of related error messages for each key that failed. This lets you easily see exactly what failed in a human readable way.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Stable releases can be installed via <code>pip install validator.py</code>. Alternatively, you can get the latest sources or a release tarball from <a href="http://github.com/mansam/validator.py">http://github.com/mansam/validator.py</a>.</p>
+
+<p><code>validator.py</code> is written with Python 2.7, but is tested with 2.6 and PyPy. It should also work with 2.5 and 3.x, though the tests currently won't run on 3.x.</p>
+
+<h2>
+<a name="getting-started-with-validations" class="anchor" href="#getting-started-with-validations"><span class="octicon octicon-link"></span></a>Getting Started with Validations</h2>
+
+<p>A validation (the set of rules used to test a dict) can be flat --consisting of just a single level of tests-- or it can contain additional conditionally nested validations. </p>
+
+<p>To create a validation, you insert a list of callables into a validation dictionary for each key/value pair in the dictionary you want to validate. When you call <code>validate</code> with the validation and your dictionary, each of those callables will be called with the respective value in your dictionary as their argument. If the callable returns <code>True</code>, then you're good to go. For example:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">"bar"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="s">"bar"</span><span class="p">]</span> 
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>When <code>validate</code> got called in the example, the value of <code>dictionary["foo"]</code> got passed to lambda in the list, and since <code>dictionary["foo"] == "bar"</code>, everything is good and the dictionary is considered valid!</p>
+
+<p>Writing your own callables is helpful in some cases, but <code>validator.py</code> helpfully provides a wide range of validations that should cover most of the common use cases.</p>
+
+<h2>
+<a name="available-validators" class="anchor" href="#available-validators"><span class="octicon octicon-link"></span></a>Available Validators</h2>
+
+<h2>
+<a name="the-equals-validator" class="anchor" href="#the-equals-validator"><span class="octicon octicon-link"></span></a>The <code>Equals</code> validator</h2>
+
+<p>The <code>Equals</code> validator just checks that the dictionary value matches the parameter to <code>Equals</code>. We use it to rewrite our previous example more succinctly:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">"bar"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Equals</span><span class="p">(</span><span class="s">"bar"</span><span class="p">)]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>In the event that it fails, it explains so clearly:</p>
+
+<div class="highlight highlight-python"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be equal to 'baz'"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-required-validator" class="anchor" href="#the-required-validator"><span class="octicon octicon-link"></span></a>The <code>Required</code> validator</h2>
+
+<p>By default, a key is considered optional. A key that's in the validation but isn't in the dictionary under test just gets silently skipped. To make sure that a key is present, use the <code>Required</code> validator. Adding the <code>Required</code> validator to the list of rules for a key ensures that the key must be present in the dictionary. Unlike most of the other validators that <code>validator.py</code> provides, <code>Required</code> shouldn't be written with parentheses.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">"bar"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Equals</span><span class="p">(</span><span class="s">"bar"</span><span class="p">)]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>In the event that a key is missing:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"is missing"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-truthy-validator" class="anchor" href="#the-truthy-validator"><span class="octicon octicon-link"></span></a>The <code>Truthy</code> validator</h2>
+
+<p>The <code>Truthy</code> validator checks that the dictionary value is something that Python treats as true. True, non-0 integers, non-empty lists, and strings all fall into this category.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="mi">1</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Truthy</span><span class="p">()]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>In the event that a key is not True-equivalent:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be True-equivalent value"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-range-validator" class="anchor" href="#the-range-validator"><span class="octicon octicon-link"></span></a>The <code>Range</code> validator</h2>
+
+<p>The <code>Range</code> validator checks that the dictionary value falls inclusively between the start and end values passed to it.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="mi">10</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>If the value falls outside the specified range:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="mi">12</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must fall between 1 and 11"</span><span class="p">]})</span>
+</pre></div>
+
+<p>You can also have Range exclude its endpoints by changing the <code>inclusive</code> keyword argument to false.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">Range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="n">inclusive</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+<h2>
+<a name="the-pattern-validator" class="anchor" href="#the-pattern-validator"><span class="octicon octicon-link"></span></a>The <code>Pattern</code> validator</h2>
+
+<p>The <code>Pattern</code> validator checks that the dictionary value matches the regex pattern that was passed to it.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">"30%"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Pattern</span><span class="p">(</span><span class="s">"\d\d\%"</span><span class="p">)]</span>
+<span class="p">}</span>
+</pre></div>
+
+<div class="highlight highlight-python"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>If the value doesn't match the regex:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="s">"99.0"</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must match regex pattern \d\d\%"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-in-validator" class="anchor" href="#the-in-validator"><span class="octicon octicon-link"></span></a>The <code>In</code> validator</h2>
+
+<p>The <code>In</code> validator checks that the dictionary value is a member of a collection passed to it.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">"spam"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">In</span><span class="p">([</span><span class="s">"spam"</span><span class="p">,</span> <span class="s">"eggs"</span><span class="p">,</span> <span class="s">"bacon"</span><span class="p">])]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>If the value doesn't belong to the collection:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="s">"beans"</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be one of ['spam', 'eggs', 'bacon']"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-not-validator" class="anchor" href="#the-not-validator"><span class="octicon octicon-link"></span></a>The <code>Not</code> validator</h2>
+
+<p>The <code>Not</code> validator negates a validator that is passed to it and checks the dictionary value against that negated validator.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">"beans"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">Not</span><span class="p">(</span><span class="n">In</span><span class="p">([</span><span class="s">"spam"</span><span class="p">,</span> <span class="s">"eggs"</span><span class="p">,</span> <span class="s">"bacon"</span><span class="p">]))]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>If the value doesn't pass the Not'd validator (meaning it would have passed the validator without the Not), then Not provides a helpfully negated version of the validator's error message:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="s">"spam"</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must not be one of ['spam', 'eggs', 'bacon']"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-instanceof-validator" class="anchor" href="#the-instanceof-validator"><span class="octicon octicon-link"></span></a>The <code>InstanceOf</code> validator</h2>
+
+<p>The <code>InstanceOf</code> validator checks that the dictionary value is an instance of the base class passed to InstanceOf, or an instance of one of its subclasses.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="s">u"i'm_a_unicode_string"</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">InstanceOf</span><span class="p">(</span><span class="nb">basestring</span><span class="p">)]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>If the value isn't an instance of the base class or one of its subclasses:</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="nb">object</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be an instance of basestring or its subclasses"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="the-subclassof-validator" class="anchor" href="#the-subclassof-validator"><span class="octicon octicon-link"></span></a>The <code>SubclassOf</code> validator</h2>
+
+<p>The <code>SubclassOf</code> validator checks that the dictionary value is inherits from the base class passed to it. To be clear, this means that the dictionary value is expected to be a class, not an instance of a class.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">dictionary</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="nb">unicode</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="n">Required</span><span class="p">,</span> <span class="n">InstanceOf</span><span class="p">(</span><span class="nb">basestring</span><span class="p">)]</span>
+<span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>If the value isn't a subclass of base class or one of its subclasses (e.g. if it's an instance of that class or a subclass of something else):</p>
+
+<div class="highlight highlight-python"><pre><span class="n">failure</span> <span class="o">=</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="s">"bar"</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">failure</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">"foo"</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be a subclass of basestring"</span><span class="p">]})</span>
+</pre></div>
+
+<h2>
+<a name="conditional-validations" class="anchor" href="#conditional-validations"><span class="octicon octicon-link"></span></a>Conditional Validations</h2>
+
+<p>In some cases you might want to apply some rules only if other validations pass. You can do that with the <code>If(validator, Then(validation))</code> construct that <code>validator.py</code> provides. For example, you might want to ensure that <code>pet['name']</code> is a cat's name, but only if <code>pet['type'] == 'cat'</code>. To do this, you'd use the <code>If</code> validator on the key that serves as the condition for the other set of the rules.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">pet</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"name"</span><span class="p">:</span> <span class="s">"whiskers"</span><span class="p">,</span>
+    <span class="s">"type"</span><span class="p">:</span> <span class="s">"cat"</span>
+<span class="p">}</span>
+<span class="n">cat_name_rules</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"name"</span><span class="p">:</span> <span class="p">[</span><span class="n">In</span><span class="p">([</span><span class="s">"whiskers"</span><span class="p">,</span> <span class="s">"fuzzy"</span><span class="p">,</span> <span class="s">"tiger"</span><span class="p">])]</span>
+<span class="p">}</span>
+<span class="n">dog_name_rules</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"name"</span><span class="p">:</span> <span class="p">[</span><span class="n">In</span><span class="p">([</span><span class="s">"spot"</span><span class="p">,</span> <span class="s">"ace"</span><span class="p">,</span> <span class="s">"bandit"</span><span class="p">])]</span>
+<span class="p">}</span>
+<span class="n">validation</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"type"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">If</span><span class="p">(</span><span class="n">Equals</span><span class="p">(</span><span class="s">"cat"</span><span class="p">),</span> <span class="n">Then</span><span class="p">(</span><span class="n">cat_name_rules</span><span class="p">)),</span>
+        <span class="n">If</span><span class="p">(</span><span class="n">Equals</span><span class="p">(</span><span class="s">"dog"</span><span class="p">),</span> <span class="n">Then</span><span class="p">(</span><span class="n">dog_name_rules</span><span class="p">))</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+<div class="highlight highlight-python"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">pet</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="p">{})</span>
+<span class="c"># Success!</span>
+</pre></div>
+
+<p>A failed conditional validation will give you appropriately nested error messages so you know exactly where things went wrong.</p>
+
+<div class="highlight highlight-python"><pre><span class="n">pet</span> <span class="o">=</span> <span class="p">{</span><span class="s">"type"</span><span class="p">:</span><span class="s">"cat"</span><span class="p">,</span> <span class="s">"name"</span><span class="p">:</span> <span class="s">"lily"</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">validate</span><span class="p">(</span><span class="n">validation</span><span class="p">,</span> <span class="n">pet</span><span class="p">)</span>
+<span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">'type'</span><span class="p">:</span> <span class="p">[{</span><span class="s">'name'</span><span class="p">:</span> <span class="p">[</span><span class="s">"must be one of ['whiskers', 'fuzzy', 'tiger']"</span><span class="p">]}]})</span>
+</pre></div>
+
+<p>This is very powerful, but you'll need to take care that you don't create conflicting validations or cyclic validations-- <code>validator.py</code> won't be able to help you catch cycles.</p>
+
+<h2>
+<a name="more-information" class="anchor" href="#more-information"><span class="octicon octicon-link"></span></a>More Information</h2>
+
+<p>For more information, please visit <a href="http://github.com/mansam/validator.py">http://github.com/mansam/validator.py</a> or contact me at <a href="mailto:mansam@csh.rit.edu">mansam@csh.rit.edu</a>. You can also send me a message on freenode if you have any questions.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Validator.py maintained by <a href="https://github.com/mansam">mansam</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
