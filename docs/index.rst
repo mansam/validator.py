@@ -3,12 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-validator.py | build status |
-=============================
+validator.py
+============
 
-.. .. toctree::
-..    :maxdepth: 2
-   
+|Build Status|
 
 About
 -----
@@ -16,7 +14,6 @@ About
 ``validator.py`` is a tool for ensuring that data conforms to certain sets of rules, called validations. A validation is essentially a schema for a dictionary, containing a list of rules for each key/value pair in the dictionary you want to validate. This is intended to fill a similar use case to form validations in WTForms or Rails, but for general sources of data, not just web forms. To get right on with it, here's a quick example of what this is for and how it works:
 
 .. code:: python
-
 
     from validator import Required, Not, Truthy, Blank, Range, Equals, In, validate
 
