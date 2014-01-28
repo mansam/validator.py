@@ -2,6 +2,35 @@ from validator import *
 
 class TestValidator(object):
 
+    def test_argspec_validator(self):
+        def truth_func(a, b, c):
+            pass
+        def false_func(c, b, a):
+            pass
+        def truth_kw_func(a, b, c, d=1):
+            pass
+        def false_kw_func(a, b, c, d=2):
+            pass
+
+        validator = {
+            "truthiness": [ArgSpec('a', 'b', 'c')],
+            "falsiness": [Not(ArgSpec('a', 'b', 'c'))],
+        }
+        kw_validator = {
+            "truthiness": [ArgSpec('a', 'b', 'c', d=1)],
+            "falsiness": [Not(ArgSpec('a', 'b', 'c', d=1))],
+        }
+        values = {
+            "truthiness": truth_func,
+            "falsiness": false_func,
+        }
+        values_kw = {
+            "truthiness": truth_kw_func,
+            "falsiness": false_kw_func,
+        }
+        assert validate(validator, values)[0]
+        assert validate(kw_validator, values_kw)[0]
+
     def test_truthy_validator(self):
         validator = {
             "truthiness": [Truthy()],
