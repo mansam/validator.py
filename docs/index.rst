@@ -368,6 +368,7 @@ Nested Validations
 You can nest validation dictionaries within each other in order to accommodate more complex data structures. Here's an example:
 
 .. code-block:: python
+
     validator = {
         "foo": [Required, Equals(1)],
         "bar": [Required, {
@@ -393,11 +394,12 @@ The above example says that the ``bar`` key represents a dictionary that also ha
 In the event of failure, you get an appropriately nested error message like those produced by the conditional validator. Here's an example of what such an error might look like:
 
 .. code-block:: python
+
     >>> validate(fails, test_case)
     (False, {'bar': [{'baz': ['must be equal to 3'],
                'qux': [{'quux': ['must be equal to 4']}]}],
       'foo': ['must be equal to 2']})
-      
+
 
 This is very powerful, but you'll need to take care that you don't create conflicting validations or cyclic validations-- ``validator.py`` won't be able to help you catch cycles.
 
