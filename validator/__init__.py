@@ -36,6 +36,7 @@ def In(collection):
 
     in_lambda.collection = collection
     in_lambda.err_message = "must be one of %r" % collection
+    in_lambda.not_message = "must not be one of %r" % collection
     return in_lambda
 
 def Not(validator):
@@ -49,22 +50,8 @@ def Not(validator):
     def not_lambda(value):
         return not validator(value)
 
-    if validator.__name__ == "eq_lambda":
-        not_lambda.err_message = "must not be equal to '%s'" % validator.value
-    elif validator.__name__ == "truth_lambda":
-        not_lambda.err_message = "must be False-equivalent value"
-    elif validator.__name__ == "in_lambda":
-        not_lambda.err_message = "must not be one of %s" % validator.collection
-    elif validator.__name__ == "blank_lambda":
-        not_lambda.err_message = "must not be blank"
-    elif validator.__name__ == "range_lambda":
-        not_lambda.err_message = "must not fall between %s and %s" % (validator.start, validator.end)
-    elif validator.__name__ == "instanceof_lambda":
-        not_lambda.err_message = "must not be an instance of %s or its subclasses" % validator.base_class
-    elif validator.__name__ == "pattern_lambda":
-        not_lambda.err_message = "must not match regex pattern %s" % validator.pattern
-    elif validator.__name__ == "subclassof_lambda":
-        not_lambda.err_message = "must not be a subclass of %s" % validator.base_class
+    not_lambda.err_message = getattr(validator, "not_message", "failed validation")
+    not_lambda.not_message = getattr(validator, "err_message", "failed validation")
 
     return not_lambda
 
@@ -78,6 +65,7 @@ def Range(start, end, inclusive=True):
     range_lambda.start = start
     range_lambda.end = end
     range_lambda.err_message = "must fall between %s and %s" % (start, end)
+    range_lambda.not_message = "must not fall between %s and %s" % (start, end)
     return range_lambda
 
 def Equals(obj):
@@ -102,6 +90,7 @@ def Equals(obj):
 
     eq_lambda.value = obj
     eq_lambda.err_message = "must be equal to %r" % obj
+    eq_lambda.not_message = "must not be equal to %r" % obj
     return eq_lambda
 
 def Blank():
@@ -126,6 +115,7 @@ def Blank():
     def blank_lambda(value):
         return value == ""
     blank_lambda.err_message = "must be an empty string"
+    blank_lambda.not_message = "must not be an empty string"
     return blank_lambda
 
 def Truthy():
@@ -152,6 +142,7 @@ def Truthy():
         else:
             return False
     truth_lambda.err_message = "must be True-equivalent value"
+    truth_lambda.not_message = "must be False-equivalent value"
     return truth_lambda
 
 def Required(field, dictionary):
@@ -199,6 +190,7 @@ def InstanceOf(base_class):
 
     instanceof_lambda.base_class = base_class
     instanceof_lambda.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
+    instanceof_lambda.not_message = "must not be an instance of %s or its subclasses" % base_class.__name__
     return instanceof_lambda
 
 def SubclassOf(base_class):
@@ -221,6 +213,7 @@ def SubclassOf(base_class):
 
     subclassof_lambda.base_class = base_class
     subclassof_lambda.err_message = "must be a subclass of %s" % base_class.__name__
+    subclassof_lambda.not_message = "must not be a subclass of %s" % base_class.__name__
     return subclassof_lambda
 
 def Pattern(pattern):
@@ -246,6 +239,7 @@ def Pattern(pattern):
         return compiled.match(value)
     pattern_lambda.pattern = pattern
     pattern_lambda.err_message = "must match regex pattern %s" % pattern
+    pattern_lambda.not_message = "must not match regex pattern %s" % pattern
     return pattern_lambda
 
 def Then(validation):
@@ -301,7 +295,8 @@ def If(validator_lambda, then_lambda):
 
 def ArgSpec(*args, **kwargs):
     """
-    Validate a function based on the given argspec
+    Validate a function based on the given argspec.
+
     # Example:
         validations = {
             "foo": [ArgSpec("a", "b", c", bar="baz")]
@@ -335,6 +330,8 @@ def ArgSpec(*args, **kwargs):
             return True
         return False
     argspec_lambda.err_message = "must match argspec ({0}) {{{1}}}".format(args, kwargs)
+    # as little sense as negating this makes, best to just be consistent.
+    argspec_lambda.not_message = "must not match argspec ({0}) {{{1}}}".format(args, kwargs)
     return argspec_lambda
 
 def validate(validation, dictionary):
