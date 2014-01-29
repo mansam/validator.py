@@ -1,4 +1,4 @@
-validator.py [![Build Status](https://travis-ci.org/mansam/validator.py.png?branch=master)](https://travis-ci.org/mansam/validator.py)
+validator.py [![Build Status](https://travis-ci.org/mansam/validator.py.png?branch=master)](https://travis-ci.org/mansam/validator.py) [![PyPI version](https://badge.fury.io/py/validator.py.png)](http://badge.fury.io/py/validator.py) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mansam/validator.py/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 ============
 
 A library for validating that dictionary values meet certain sets of parameters. Much like form validators, but for dicts.
