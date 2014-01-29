@@ -221,3 +221,40 @@ class TestValidator(object):
         }
         assert validate(passes, test_case)[0]
         assert not validate(fails, test_case)[0]
+
+    def test_nested_validations(self):
+        passes = {
+            "foo": [Required, Equals(1)],
+            "bar": [
+                Required, 
+                {
+                    "baz": [Required, Equals(2)],
+                    "qux": [Required, {
+                        "quux": [Required, Equals(3)]
+                    }]
+                }
+            ]
+        }
+        fails = {
+            "foo": [Required, Equals(2)],
+            "bar": [
+                Required, 
+                {
+                    "baz": [Required, Equals(3)],
+                    "qux": [Required, {
+                        "quux": [Required, Equals(4)]
+                    }]
+                }
+            ]
+        }
+        test_case = {
+            "foo": 1,
+            "bar": {
+                "baz": 2,
+                "qux": {
+                    "quux": 3
+                }
+            }
+        }
+        assert validate(passes, test_case)[0]
+        assert not validate(fails, test_case)[0]

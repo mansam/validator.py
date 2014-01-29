@@ -361,7 +361,16 @@ def validate(validation, dictionary):
                 errors[key] = "must be present"
                 continue
         for v in validation[key]:
-            # skip Required, since it was already
+            # Ok, need to deal with nested
+            # validations.
+            if isinstance(v, dict):
+                valid, nested_errors = validate(v, dictionary[key])
+                if nested_errors:
+                    errors[key].append(nested_errors)
+                continue
+            # Done with that, on to the actual
+            # validating bit.
+            # Skip Required, since it was already
             # handled before this point.
             if not v == Required:
                 # special handling for the
