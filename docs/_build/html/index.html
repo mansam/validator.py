@@ -344,6 +344,12 @@
 <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;must be one of [&#39;whiskers&#39;, &#39;fuzzy&#39;, &#39;tiger&#39;]&quot;</span><span class="p">]}]})</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="nested-validations">
+<h2>Nested Validations<a class="headerlink" href="#nested-validations" title="Permalink to this headline">¶</a></h2>
+<p>You can nest validation dictionaries within each other in order to accommodate more complex data structures. Here&#8217;s an example:</p>
+<p>The above example says that the <tt class="docutils literal"><span class="pre">bar</span></tt> key represents a dictionary that also has its own set of validations. For good measure, this example has yet another dictionary under the <tt class="docutils literal"><span class="pre">qux</span></tt> key. As long as everything checks out, <tt class="docutils literal"><span class="pre">validate</span></tt> will return the normal <tt class="docutils literal"><span class="pre">(True,</span> <span class="pre">{})</span></tt> response indicating success.</p>
+<p>In the event of failure, you get an appropriately nested error message like those produced by the conditional validator. Here&#8217;s an example of what such an error might look like:</p>
 <p>This is very powerful, but you&#8217;ll need to take care that you don&#8217;t create conflicting validations or cyclic validations&#8211; <tt class="docutils literal"><span class="pre">validator.py</span></tt> won&#8217;t be able to help you catch cycles.</p>
 </div>
 <div class="section" id="more-information">
@@ -382,6 +388,7 @@
 <li><a class="reference internal" href="#the-instanceof-validator">The <tt class="docutils literal"><span class="pre">InstanceOf</span></tt> validator</a></li>
 <li><a class="reference internal" href="#the-subclassof-validator">The <tt class="docutils literal"><span class="pre">SubclassOf</span></tt> validator</a></li>
 <li><a class="reference internal" href="#conditional-validations">Conditional Validations</a></li>
+<li><a class="reference internal" href="#nested-validations">Nested Validations</a></li>
 <li><a class="reference internal" href="#more-information">More Information</a></li>
 </ul>
 </li>
