@@ -361,34 +361,36 @@ def validate(validation, dictionary):
                 errors[key] = "must be present"
                 continue
         for v in validation[key]:
-            # Ok, need to deal with nested
-            # validations.
-            if isinstance(v, dict):
-                valid, nested_errors = validate(v, dictionary[key])
-                if nested_errors:
-                    errors[key].append(nested_errors)
-                continue
-            # Done with that, on to the actual
-            # validating bit.
-            # Skip Required, since it was already
-            # handled before this point.
-            if not v == Required:
-                # special handling for the
-                # If(Then()) form
-                if v.__name__ == "if_lambda":
-                    conditional, dependent = v(dictionary[key], dictionary)
-                    # if the If() condition passed and there were errors
-                    # in the second set of rules, then add them to the
-                    # list of errors for the key with the condtional
-                    # as a nested dictionary of errors.
-                    if conditional and dependent[1]:
-                        errors[key].append(dependent[1])
-                # handling for normal validators
-                else:
-                    valid = v(dictionary[key])
-                    if not valid:
-                        msg = getattr(v, "err_message", "failed validation")
-                        errors[key].append(msg)
+            # don't break on optional keys
+            if key in dictionary:
+                # Ok, need to deal with nested
+                # validations.
+                if isinstance(v, dict):
+                    valid, nested_errors = validate(v, dictionary[key])
+                    if nested_errors:
+                        errors[key].append(nested_errors)
+                    continue
+                # Done with that, on to the actual
+                # validating bit.
+                # Skip Required, since it was already
+                # handled before this point.
+                if not v == Required:
+                    # special handling for the
+                    # If(Then()) form
+                    if v.__name__ == "if_lambda":
+                        conditional, dependent = v(dictionary[key], dictionary)
+                        # if the If() condition passed and there were errors
+                        # in the second set of rules, then add them to the
+                        # list of errors for the key with the condtional
+                        # as a nested dictionary of errors.
+                        if conditional and dependent[1]:
+                            errors[key].append(dependent[1])
+                    # handling for normal validators
+                    else:
+                        valid = v(dictionary[key])
+                        if not valid:
+                            msg = getattr(v, "err_message", "failed validation")
+                            errors[key].append(msg)
     if len(errors) > 0:
         return False, dict(errors)
     else:

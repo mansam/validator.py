@@ -258,3 +258,16 @@ class TestValidator(object):
         }
         assert validate(passes, test_case)[0]
         assert not validate(fails, test_case)[0]
+
+    def test_optional_validations(self):
+        optional_validation = {
+            "foo": [Equals(1)],
+            "bar": [{
+                "baz": [Equals(2)],
+                "qux": [Equals(3)]
+            }]
+        }
+        test_case = {
+            "bar": {"baz":2}
+        }
+        assert validate(optional_validation, test_case)[0]
