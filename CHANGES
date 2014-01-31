@@ -8,5 +8,5 @@ v0.4.0, 1/23/2014 -- Added the conditional If(Then()) validator
 v0.4.1, 1/24/2014 -- Clarified the error message produced by Equals
 v0.5.0, 1/28/2014 -- Introduced @rossdylan's ArgSpec validator
 v0.6.0, 1/28/2014 -- Implemented nested validations, also removed the list of negated error messages out of the Not validator. All validators are now responsible for having their own .not_message attribute which should contain a negated version of their normal error message. Those that don't will have a generic error message substituted in for them.
-                     
+v0.6.1, 1/30/2014 -- Fixed bug causing exceptions to be thrown when optional keys were missing.
 
