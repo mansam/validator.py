@@ -1,5 +1,11 @@
 from validator import *
 
+class BaseClass(object):
+    pass
+
+class SubClass(BaseClass):
+    pass
+
 class TestValidator(object):
 
     def test_argspec_validator(self):
@@ -169,26 +175,26 @@ class TestValidator(object):
 
     def test_instanceof_validator(self):
         validator = {
-            "classy": [Required, InstanceOf(unicode)],
-            "subclassy": [Required, InstanceOf(basestring)],
-            "not_classy": [Required, Not(InstanceOf(unicode))],
-            "not_subclassy": [Required, Not(InstanceOf(basestring))]
+            "classy": [Required, InstanceOf(SubClass)],
+            "subclassy": [Required, InstanceOf(BaseClass)],
+            "not_classy": [Required, Not(InstanceOf(SubClass))],
+            "not_subclassy": [Required, Not(InstanceOf(BaseClass))]
         }
         test_case = {
-            "classy": u"unicode_string",
-            "subclassy": u"unicode_string",
-            "not_classy": r'raw_string',
+            "classy": SubClass(),
+            "subclassy": BaseClass(),
+            "not_classy": object(),
             "not_subclassy": 3
         }
         assert validate(validator, test_case)[0]
 
     def test_subclassof_validator(self):
         validator = {
-            "is_subclass": [Required, SubclassOf(basestring)],
-            "not_subclass": [Required, Not(SubclassOf(basestring))],
+            "is_subclass": [Required, SubclassOf(BaseClass)],
+            "not_subclass": [Required, Not(SubclassOf(BaseClass))],
         }
         test_case = {
-            "is_subclass": unicode,
+            "is_subclass": SubClass,
             "not_subclass": int
         }
         assert validate(validator, test_case)[0]
@@ -226,7 +232,7 @@ class TestValidator(object):
         passes = {
             "foo": [Required, Equals(1)],
             "bar": [
-                Required, 
+                Required,
                 {
                     "baz": [Required, Equals(2)],
                     "qux": [Required, {
@@ -238,7 +244,7 @@ class TestValidator(object):
         fails = {
             "foo": [Required, Equals(2)],
             "bar": [
-                Required, 
+                Required,
                 {
                     "baz": [Required, Equals(3)],
                     "qux": [Required, {
