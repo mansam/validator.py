@@ -1,5 +1,27 @@
+# The MIT License (MIT)
+
+# Copyright (c) 2014 Samuel Lucidi <sam@samlucidi.com>
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 from validator import *
 from validator.ext import *
+import pytest
 
 class BaseClass(object):
     pass
@@ -22,6 +44,7 @@ class TestValidator(object):
         validator = {
             "truthiness": [ArgSpec('a', 'b', 'c')],
             "falsiness": [Not(ArgSpec('a', 'b', 'c'))],
+            "wrongnum": [Not(ArgSpec('a', 'b', 'c', 'd'))]
         }
         kw_validator = {
             "truthiness": [ArgSpec('a', 'b', 'c', d=1)],
@@ -30,6 +53,7 @@ class TestValidator(object):
         values = {
             "truthiness": truth_func,
             "falsiness": false_func,
+            "wrongnum": truth_func
         }
         values_kw = {
             "truthiness": truth_kw_func,
@@ -301,6 +325,10 @@ class TestValidator(object):
         assert validate(validation, test_case_substring)[0]
 
     def test_length_validator(self):
+        with pytest.raises(ValueError):
+            Length(-1)
+        with pytest.raises(ValueError):
+            Length(0)
         passes = {
             "foo": [Required, Length(5), Length(1, maximum=5)],
             "bar": [Required, Length(0, maximum=10)]
@@ -311,7 +339,7 @@ class TestValidator(object):
         }
         test_case = {
             "foo": "12345",
-            "bar": "12345",
+            "bar": [1, 2, 3, 4, 5],
         }
         assert validate(passes, test_case)[0]
         assert not validate(fails, test_case)[0]
