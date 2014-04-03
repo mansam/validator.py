@@ -8,11 +8,22 @@ Author: Samuel Lucidi <slucidi@newstex.com>
 
 """
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 import re
 from collections import defaultdict
-from inspect import getargspec
+
+def _isstr(s):
+    """
+    Python 2/3 compatible check to see
+    if an object is a string type.
+
+    """
+
+    try:
+        return isinstance(s, basestring)
+    except NameError:
+        return isinstance(s, str)
 
 def In(collection):
     """
@@ -48,10 +59,10 @@ def Not(validator):
     """
 
     def not_lambda(value):
-        return not validator(value)
-
-    not_lambda.err_message = getattr(validator, "not_message", "failed validation")
-    not_lambda.not_message = getattr(validator, "err_message", "failed validation")
+        result = validator(value)
+        not_lambda.err_message = getattr(validator, "not_message", "failed validation")
+        not_lambda.not_message = getattr(validator, "err_message", "failed validation")
+        return not result
 
     return not_lambda
 
@@ -292,47 +303,92 @@ def If(validator_lambda, then_lambda):
 
     return if_lambda
 
-
-def ArgSpec(*args, **kwargs):
+    
+def Length(minimum, maximum=0):
     """
-    Validate a function based on the given argspec.
+    Use to specify that the
+    value of the key being
+    validated must have at least
+    `minimum` elements and optionally
+    at most `maximum` elements.
+
+    At least one of the parameters
+    to this validator must be non-zero, 
+    and neither may be negative.
 
     # Example:
         validations = {
-            "foo": [ArgSpec("a", "b", c", bar="baz")]
+            "field": [Length(0, maximum=5)]
         }
-        def pass_func(a, b, c, bar="baz"):
-            pass
-        def fail_func(b, c, a, baz="bar"):
-            pass
-        passes = {"foo": pass_func}
-        fails = {"foo": fail_func}
+        passes = {"field": "hello"}
+        fails  = {"field": "hello world"}
+
     """
-    def argspec_lambda(value):
-        argspec = getargspec(value)
-        argspec_kw_vals = ()
-        if argspec.defaults != None:
-            argspec_kw_vals = argspec.defaults
-        kw_vals = {}
-        arg_offset = 0
-        arg_len = len(argspec.args) - 1
-        for val in argspec_kw_vals[::-1]:
-            kw_vals[argspec.args[arg_len - arg_offset]] = val
-            arg_offset += 1
-        if kwargs == kw_vals:
-            if len(args) != arg_len - arg_offset + 1:
-                return False
-            index = 0
-            for arg in args:
-                if argspec.args[index] != arg:
-                    return False
-                index += 1
-            return True
-        return False
-    argspec_lambda.err_message = "must match argspec ({0}) {{{1}}}".format(args, kwargs)
-    # as little sense as negating this makes, best to just be consistent.
-    argspec_lambda.not_message = "must not match argspec ({0}) {{{1}}}".format(args, kwargs)
-    return argspec_lambda
+
+    if not minimum and not maximum:
+        raise ValueError("Length must have a non-zero minimum or maximum parameter.")
+    if minimum < 0 or maximum < 0:
+        raise ValueError("Length cannot have negative parameters.")
+
+    err_messages = {
+        "maximum": "must be at most {0} {1} in length",
+        "minimum": "must be at least {0} {1} in length",
+        "range": "must{0}be between {1} and {2} {3} in length"
+    }
+
+    def length_lambda(value):
+
+        # this is all a crufty hack to set an
+        # appropriate error message.
+        if _isstr(value):
+            length_lambda.unit = "characters"
+        else:
+            length_lambda.unit = "elements"
+        if minimum and maximum:
+            err_msg = err_messages["range"].format(' ', minimum, maximum, length_lambda.unit)
+            not_msg = err_messages["range"].format(' not ', minimum, maximum, length_lambda.unit)
+        elif minimum:
+            err_msg = err_messages["minimum"].format(minimum, length_lambda.unit)
+            not_msg = err_messages["maximum"].format(minimum - 1, length_lambda.unit)
+        elif maximum:
+            err_msg = err_messages["maximum"].format(maximum, length_lambda.unit)
+            not_msg = err_messages["minimum"].format(maximum + 1, length_lambda.unit)
+        else:
+            # this should not be possible
+            assert False
+
+        length_lambda.err_message = err_msg
+        length_lambda.not_message = not_msg
+        # the actual test starts here
+        if maximum:
+            return minimum <= len(value) <= maximum
+        else:
+            return minimum <= len(value)
+
+    return length_lambda
+
+def Contains(contained):
+    """
+    Use to ensure that the value of the key
+    being validated contains the value passed
+    into the Contains validator. Works with
+    any type that supports the 'in' syntax.
+
+    # Example:
+        validations = {
+            "field": [Contains(3)]
+        }
+        passes = {"field": [1, 2, 3]}
+        fails  = {"field": [4, 5, 6]}
+
+    """
+
+    def contains_lambda(value):
+        return contained in value
+
+    contains_lambda.err_message = "must contain {0}".format(contained)
+    contains_lambda.not_message = "must not contain {0}".format(contained)
+    return contains_lambda
 
 def validate(validation, dictionary):
     """

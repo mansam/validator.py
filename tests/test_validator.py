@@ -1,4 +1,5 @@
 from validator import *
+from validator.ext import *
 
 class BaseClass(object):
     pass
@@ -277,3 +278,41 @@ class TestValidator(object):
             "bar": {"baz":2}
         }
         assert validate(optional_validation, test_case)[0]
+
+    def test_contains_validator(self):
+        validation = {
+            "foo": [Required, Contains("1")],
+            "qux": [Required, Not(Contains("1"))]
+        }
+        test_case_list = {
+            "foo": ["1", "2", "3"],
+            "qux": ["2", "3", "4"]
+        }
+        test_case_dict = {
+            "foo": {"1": "one", "2": "two"},
+            "qux": {"2": "two", "3": "three"}
+        }
+        test_case_substring = {
+            "foo": "test1case",
+            "qux": "barbaz"
+        }
+        assert validate(validation, test_case_list)[0]
+        assert validate(validation, test_case_dict)[0]
+        assert validate(validation, test_case_substring)[0]
+
+    def test_length_validator(self):
+        passes = {
+            "foo": [Required, Length(5), Length(1, maximum=5)],
+            "bar": [Required, Length(0, maximum=10)]
+        }
+        fails = {
+            "foo": [Required, Length(8), Length(1, maximum=11)],
+            "bar": [Required, Length(0, maximum=3)]
+        }
+        test_case = {
+            "foo": "12345",
+            "bar": "12345",
+        }
+        assert validate(passes, test_case)[0]
+        assert not validate(fails, test_case)[0]
+
