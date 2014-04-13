@@ -11,4 +11,4 @@ v0.6.0, 1/28/2014 -- Implemented nested validations, also removed the list of ne
 v0.6.1, 1/30/2014 -- Fixed bug causing exceptions to be thrown when optional keys were missing.
 v0.7.0, 3/01/2014 -- Tests now support Python 3.x.
 v0.8.0, 4/03/2014 -- Added Contains and Length validators. Created 'validator.ext' module for extensions, moved ArgSpec into extensions.
-
+v1.0.0, 4/13/2014 -- Major version release. Default validators now inherit from Validator abstract class. Single validators are no longer required to be wrapped in a list.

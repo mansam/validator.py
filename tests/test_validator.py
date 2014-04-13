@@ -97,9 +97,12 @@ class TestValidator(object):
         bool_value = {
             "truthiness": True
         }
+        missing_value = {}
         assert validate(validator, str_value)[0]
         assert validate(validator, int_value)[0]
         assert validate(validator, bool_value)[0]
+        validity, errors = validate(validator, missing_value)
+        assert errors['truthiness'] == "must be present"
 
     def test_blank_validator(self):
         validator = {
@@ -344,3 +347,13 @@ class TestValidator(object):
         assert validate(passes, test_case)[0]
         assert not validate(fails, test_case)[0]
 
+    def test_validator_without_list(self):
+        validation = {
+            "foo": Equals(5),
+            "bar": Required
+        }
+        test_case = {
+            "foo": 5,
+            "bar": "present"
+        }
+        assert validate(validation, test_case)[0]

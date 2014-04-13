@@ -29,10 +29,11 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "0.8.0"
+__version__ = "1.0.0"
 
 import re
 from collections import defaultdict
+from abc import ABCMeta, abstractmethod
 
 def _isstr(s):
     """
@@ -46,7 +47,17 @@ def _isstr(s):
     except NameError:
         return isinstance(s, str)
 
-def In(collection):
+class Validator(object):
+    __metaclass__ = ABCMeta
+
+    err_message = "failed validation"
+    not_message = "failed validation"
+
+    @abstractmethod
+    def __call__(self, *args, **kwargs):
+        raise NotImplemented
+
+class In(Validator):
     """
     Use to specify that the
     value of the key being
@@ -63,15 +74,15 @@ def In(collection):
 
     """
 
-    def in_lambda(value):
-        return (value in collection)
+    def __init__(self, collection):
+        self.collection = collection
+        self.err_message = "must be one of %r" % collection
+        self.not_message = "must not be one of %r" % collection
 
-    in_lambda.collection = collection
-    in_lambda.err_message = "must be one of %r" % collection
-    in_lambda.not_message = "must not be one of %r" % collection
-    return in_lambda
+    def __call__(self, value):
+        return (value in self.collection)
 
-def Not(validator):
+class Not(Validator):
     """
     Use to negate the requirement
     of another validator. Does not
@@ -79,28 +90,30 @@ def Not(validator):
 
     """
 
-    def not_lambda(value):
-        result = validator(value)
-        not_lambda.err_message = getattr(validator, "not_message", "failed validation")
-        not_lambda.not_message = getattr(validator, "err_message", "failed validation")
-        return not result
+    def __init__(self, validator):
+        self.validator = validator
+        self.err_message = getattr(validator, "not_message", "failed validation")
+        self.not_message = getattr(validator, "err_message", "failed validation")
 
-    return not_lambda
+    def __call__(self, value):
+        return not self.validator(value)
 
-def Range(start, end, inclusive=True):
+class Range(Validator):
 
-    def range_lambda(value):
-        if inclusive:
-            return start <= value <= end
+    def __init__(self, start, end, inclusive=True):
+        self.start = start
+        self.end = end
+        self.inclusive = inclusive
+        self.err_message = "must fall between %s and %s" % (start, end)
+        self.not_message = "must not fall between %s and %s" % (start, end)
+
+    def __call__(self, value):
+        if self.inclusive:
+            return self.start <= value <= self.end
         else:
-            return start < value < end
-    range_lambda.start = start
-    range_lambda.end = end
-    range_lambda.err_message = "must fall between %s and %s" % (start, end)
-    range_lambda.not_message = "must not fall between %s and %s" % (start, end)
-    return range_lambda
+            return self.start < value < self.end
 
-def Equals(obj):
+class Equals(Validator):
     """
     Use to specify that the
     value of the key being
@@ -117,15 +130,15 @@ def Equals(obj):
 
     """
 
-    def eq_lambda(value):
-        return value == obj
+    def __init__(self, obj):
+        self.obj = obj
+        self.err_message = "must be equal to %r" % obj
+        self.not_message = "must not be equal to %r" % obj
 
-    eq_lambda.value = obj
-    eq_lambda.err_message = "must be equal to %r" % obj
-    eq_lambda.not_message = "must not be equal to %r" % obj
-    return eq_lambda
+    def __call__(self, value):
+        return value == self.obj
 
-def Blank():
+class Blank(Validator):
     """
     Use to specify that the
     value of the key being
@@ -144,13 +157,14 @@ def Blank():
 
     """
 
-    def blank_lambda(value):
-        return value == ""
-    blank_lambda.err_message = "must be an empty string"
-    blank_lambda.not_message = "must not be an empty string"
-    return blank_lambda
+    def __init__(self):
+        self.err_message = "must be an empty string"
+        self.not_message = "must not be an empty string"
 
-def Truthy():
+    def __call__(self, value):
+        return value == ""
+
+class Truthy(Validator):
     """
     Use to specify that the
     value of the key being
@@ -166,16 +180,17 @@ def Truthy():
         fails  = {"field": 0}
 
 
-    """
+    """    
 
-    def truth_lambda(value):
+    def __init__(self):
+        self.err_message = "must be True-equivalent value"
+        self.not_message = "must be False-equivalent value"       
+
+    def __call__(self, value):
         if value:
             return True
         else:
             return False
-    truth_lambda.err_message = "must be True-equivalent value"
-    truth_lambda.not_message = "must be False-equivalent value"
-    return truth_lambda
 
 def Required(field, dictionary):
     """
@@ -200,7 +215,7 @@ def Required(field, dictionary):
 
     return (field in dictionary)
 
-def InstanceOf(base_class):
+class InstanceOf(Validator):
     """
     Use to specify that the
     value of the key being
@@ -217,15 +232,15 @@ def InstanceOf(base_class):
 
     """
 
-    def instanceof_lambda(value):
-        return isinstance(value, base_class)
+    def __init__(self, base_class):
+        self.base_class = base_class
+        self.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
+        self.not_message = "must not be an instance of %s or its subclasses" % base_class.__name__
 
-    instanceof_lambda.base_class = base_class
-    instanceof_lambda.err_message = "must be an instance of %s or its subclasses" % base_class.__name__
-    instanceof_lambda.not_message = "must not be an instance of %s or its subclasses" % base_class.__name__
-    return instanceof_lambda
+    def __call__(self, value):
+        return isinstance(value, self.base_class)
 
-def SubclassOf(base_class):
+class SubclassOf(Validator):
     """
     Use to specify that the
     value of the key being
@@ -240,15 +255,15 @@ def SubclassOf(base_class):
         fails  = {"field": int}
     """
 
-    def subclassof_lambda(class_):
-        return issubclass(class_, base_class)
+    def __init__(self, base_class):
+        self.base_class = base_class
+        self.err_message = "must be a subclass of %s" % base_class.__name__
+        self.not_message = "must not be a subclass of %s" % base_class.__name__
 
-    subclassof_lambda.base_class = base_class
-    subclassof_lambda.err_message = "must be a subclass of %s" % base_class.__name__
-    subclassof_lambda.not_message = "must not be a subclass of %s" % base_class.__name__
-    return subclassof_lambda
+    def __call__(self, class_):
+        return issubclass(class_, self.base_class)
 
-def Pattern(pattern):
+class Pattern(Validator):
     """
     Use to specify that the
     value of the key being
@@ -265,16 +280,16 @@ def Pattern(pattern):
 
     """
 
-    compiled = re.compile(pattern)
+    def __init__(self, pattern):
+        self.pattern = pattern
+        self.err_message = "must match regex pattern %s" % pattern
+        self.not_message = "must not match regex pattern %s" % pattern
+        self.compiled = re.compile(pattern)
 
-    def pattern_lambda(value):
-        return compiled.match(value)
-    pattern_lambda.pattern = pattern
-    pattern_lambda.err_message = "must match regex pattern %s" % pattern
-    pattern_lambda.not_message = "must not match regex pattern %s" % pattern
-    return pattern_lambda
+    def __call__(self, value):
+        return self.compiled.match(value)
 
-def Then(validation):
+class Then(Validator):
     """
     Special validator for use as
     part of the If rule.
@@ -291,13 +306,13 @@ def Then(validation):
         fails = {"foo": 1, "bar": 3}
     """
 
-    def then_lambda(dictionary):
-        return validate(validation, dictionary)
+    def __init__(self, validation):
+        self.validation = validation
 
-    return then_lambda
+    def __call__(self, dictionary):
+        return validate(self.validation, dictionary)
 
-
-def If(validator_lambda, then_lambda):
+class If(Validator):
     """
     Special conditional validator.
     If the validator passed as the first
@@ -314,18 +329,19 @@ def If(validator_lambda, then_lambda):
         fails = {"foo": 1, "bar": 3}
     """
 
-    def if_lambda(value, dictionary):
+    def __init__(self, validator, then_clause):
+        self.validator = validator
+        self.then_clause = then_clause
+
+    def __call__(self, value, dictionary):
         conditional = False
         dependent = None
-        if validator_lambda(value):
+        if self.validator(value):
             conditional = True
-            dependent = then_lambda(dictionary)
+            dependent = self.then_clause(dictionary)
         return conditional, dependent
-
-    return if_lambda
-
     
-def Length(minimum, maximum=0):
+class Length(Validator):
     """
     Use to specify that the
     value of the key being
@@ -346,49 +362,37 @@ def Length(minimum, maximum=0):
 
     """
 
-    if not minimum and not maximum:
-        raise ValueError("Length must have a non-zero minimum or maximum parameter.")
-    if minimum < 0 or maximum < 0:
-        raise ValueError("Length cannot have negative parameters.")
-
     err_messages = {
-        "maximum": "must be at most {0} {1} in length",
-        "minimum": "must be at least {0} {1} in length",
-        "range": "must{0}be between {1} and {2} {3} in length"
+        "maximum": "must be at most {0} elements in length",
+        "minimum": "must be at least {0} elements in length",
+        "range": "must{0}be between {1} and {2} elements in length"
     }
 
-    def length_lambda(value):
+    def __init__(self, minimum, maximum=0):
+        if not minimum and not maximum:
+            raise ValueError("Length must have a non-zero minimum or maximum parameter.")
+        if minimum < 0 or maximum < 0:
+            raise ValueError("Length cannot have negative parameters.")
 
-        # this is all a crufty hack to set an
-        # appropriate error message.
-        if _isstr(value):
-            length_lambda.unit = "characters"
-        else:
-            length_lambda.unit = "elements"
+        self.minimum = minimum
+        self.maximum = maximum
         if minimum and maximum:
-            err_msg = err_messages["range"].format(' ', minimum, maximum, length_lambda.unit)
-            not_msg = err_messages["range"].format(' not ', minimum, maximum, length_lambda.unit)
+            self.err_message = self.err_messages["range"].format(' ', minimum, maximum)
+            self.not_message = self.err_messages["range"].format(' not ', minimum, maximum)
         elif minimum:
-            err_msg = err_messages["minimum"].format(minimum, length_lambda.unit)
-            not_msg = err_messages["maximum"].format(minimum - 1, length_lambda.unit)
+            self.err_message = self.err_messages["minimum"].format(minimum)
+            self.not_message = self.err_messages["maximum"].format(minimum - 1)
         elif maximum:
-            err_msg = err_messages["maximum"].format(maximum, length_lambda.unit)
-            not_msg = err_messages["minimum"].format(maximum + 1, length_lambda.unit)
+            self.err_message = self.err_messages["maximum"].format(maximum)
+            self.not_message = self.err_messages["minimum"].format(maximum + 1)
+
+    def __call__(self, value):
+        if self.maximum:
+            return self.minimum <= len(value) <= self.maximum
         else:
-            # this should not be possible
-            assert False
+            return self.minimum <= len(value)
 
-        length_lambda.err_message = err_msg
-        length_lambda.not_message = not_msg
-        # the actual test starts here
-        if maximum:
-            return minimum <= len(value) <= maximum
-        else:
-            return minimum <= len(value)
-
-    return length_lambda
-
-def Contains(contained):
+class Contains(Validator):
     """
     Use to ensure that the value of the key
     being validated contains the value passed
@@ -404,12 +408,13 @@ def Contains(contained):
 
     """
 
-    def contains_lambda(value):
-        return contained in value
+    def __init__(self, contained):
+        self.contained = contained
+        self.err_message = "must contain {0}".format(contained)
+        self.not_message = "must not contain {0}".format(contained)
 
-    contains_lambda.err_message = "must contain {0}".format(contained)
-    contains_lambda.not_message = "must not contain {0}".format(contained)
-    return contains_lambda
+    def __call__(self, container):
+        return self.contained in container
 
 def validate(validation, dictionary):
     """
@@ -433,42 +438,56 @@ def validate(validation, dictionary):
 
     errors = defaultdict(list)
     for key in validation:
-        if Required in validation[key]:
-            if not Required(key, dictionary):
-                errors[key] = "must be present"
-                continue
-        for v in validation[key]:
-            # don't break on optional keys
-            if key in dictionary:
-                # Ok, need to deal with nested
-                # validations.
-                if isinstance(v, dict):
-                    valid, nested_errors = validate(v, dictionary[key])
-                    if nested_errors:
-                        errors[key].append(nested_errors)
+        if isinstance(validation[key], (list, tuple)):
+            if Required in validation[key]:
+                if not Required(key, dictionary):
+                    errors[key] = "must be present"
                     continue
-                # Done with that, on to the actual
-                # validating bit.
-                # Skip Required, since it was already
-                # handled before this point.
-                if not v == Required:
-                    # special handling for the
-                    # If(Then()) form
-                    if v.__name__ == "if_lambda":
-                        conditional, dependent = v(dictionary[key], dictionary)
-                        # if the If() condition passed and there were errors
-                        # in the second set of rules, then add them to the
-                        # list of errors for the key with the condtional
-                        # as a nested dictionary of errors.
-                        if conditional and dependent[1]:
-                            errors[key].append(dependent[1])
-                    # handling for normal validators
-                    else:
-                        valid = v(dictionary[key])
-                        if not valid:
-                            msg = getattr(v, "err_message", "failed validation")
-                            errors[key].append(msg)
+            _validate_list_helper(validation, dictionary, key, errors)
+        else:
+            v = validation[key]
+            if v == Required:
+                if not Required(key, dictionary):
+                    errors[key] = "must be present"
+            else:
+                _validate_and_store_errs(v, dictionary, key, errors)
     if len(errors) > 0:
         return False, dict(errors)
     else:
         return True, {}
+
+def _validate_and_store_errs(validator, dictionary, key, errors):
+    valid = validator(dictionary[key])
+    if not valid:
+        msg = getattr(validator, "err_message", "failed validation")
+        errors[key].append(msg)
+
+def _validate_list_helper(validation, dictionary, key, errors):
+    for v in validation[key]:
+        # don't break on optional keys
+        if key in dictionary:
+            # Ok, need to deal with nested
+            # validations.
+            if isinstance(v, dict):
+                valid, nested_errors = validate(v, dictionary[key])
+                if nested_errors:
+                    errors[key].append(nested_errors)
+                continue
+            # Done with that, on to the actual
+            # validating bit.
+            # Skip Required, since it was already
+            # handled before this point.
+            if not v == Required:
+                # special handling for the
+                # If(Then()) form
+                if isinstance(v, If):
+                    conditional, dependent = v(dictionary[key], dictionary)
+                    # if the If() condition passed and there were errors
+                    # in the second set of rules, then add them to the
+                    # list of errors for the key with the condtional
+                    # as a nested dictionary of errors.
+                    if conditional and dependent[1]:
+                        errors[key].append(dependent[1])
+                # handling for normal validators
+                else:
+                    _validate_and_store_errs(v, dictionary, key, errors)
