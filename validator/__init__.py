@@ -29,7 +29,7 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 import re
 from collections import defaultdict
@@ -48,6 +48,13 @@ def _isstr(s):
         return isinstance(s, str)
 
 class Validator(object):
+    """
+    Abstract class that advanced
+    validators can inherit from in order
+    to set custom error messages and such.
+
+    """
+
     __metaclass__ = ABCMeta
 
     err_message = "failed validation"
@@ -99,6 +106,22 @@ class Not(Validator):
         return not self.validator(value)
 
 class Range(Validator):
+    """
+    Use to specify that the value of the
+    key being validated must fall between
+    the start and end values. By default
+    the range is inclusive, though the
+    range can be made excusive by setting
+    inclusive to false.
+
+    # Example:
+        validations = {
+            "field": [Range(0, 10)]
+        }
+        passes = {"field": 10}
+        fails = {"field" : 11}
+
+    """
 
     def __init__(self, start, end, inclusive=True):
         self.start = start
@@ -180,11 +203,11 @@ class Truthy(Validator):
         fails  = {"field": 0}
 
 
-    """    
+    """
 
     def __init__(self):
         self.err_message = "must be True-equivalent value"
-        self.not_message = "must be False-equivalent value"       
+        self.not_message = "must be False-equivalent value"
 
     def __call__(self, value):
         if value:
@@ -253,6 +276,7 @@ class SubclassOf(Validator):
         }
         passes = {"field": str} # is a subclass of basestring
         fails  = {"field": int}
+
     """
 
     def __init__(self, base_class):
@@ -340,7 +364,7 @@ class If(Validator):
             conditional = True
             dependent = self.then_clause(dictionary)
         return conditional, dependent
-    
+
 class Length(Validator):
     """
     Use to specify that the
@@ -350,7 +374,7 @@ class Length(Validator):
     at most `maximum` elements.
 
     At least one of the parameters
-    to this validator must be non-zero, 
+    to this validator must be non-zero,
     and neither may be negative.
 
     # Example:
@@ -459,6 +483,8 @@ def validate(validation, dictionary):
 def _validate_and_store_errs(validator, dictionary, key, errors):
     valid = validator(dictionary[key])
     if not valid:
+        # set a default error message for things like lambdas
+        # and other callables that won't have an err_message set.
         msg = getattr(validator, "err_message", "failed validation")
         errors[key].append(msg)
 

@@ -33,7 +33,7 @@ About
         "qux": 101
     }
     >>> validate(rules, passes)
-    (True, {}) 
+    (True, {})
 
     # but this one would fail
     fails = {
@@ -71,7 +71,7 @@ To create a validation, you insert a list of callables into a validation diction
         "foo": "bar"
     }
     validation = {
-        "foo": [lambda x: x == "bar"] 
+        "foo": [lambda x: x == "bar"]
     }
     
     >>> validate(validation, dictionary)
@@ -303,7 +303,7 @@ If the value isn't an instance of the base class or one of its subclasses:
 The ``SubclassOf`` validator
 ----------------------------
 
-The ``SubclassOf`` validator checks that the dictionary value is inherits from the base class passed to it. To be clear, this means that the dictionary value is expected to be a class, not an instance of a class.
+The ``SubclassOf`` validator checks that the dictionary value inherits from the base class passed to it. To be clear, this means that the dictionary value is expected to be a class, not an instance of a class.
 
 .. code-block:: python
 
@@ -325,6 +325,24 @@ If the value isn't a subclass of base class or one of its subclasses (e.g. if it
     failure = {"foo": "bar"}
     >>> validate(validation, failure)
     (False, {"foo": ["must be a subclass of basestring"]})
+
+The ``Length`` validator
+------------------------
+
+The ``Length`` validator checks that value the must have at least `minimum` elements and optionally at most `maximum` elements.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": [1, 2, 3, 4, 5]
+    }
+    validation = {
+        "foo": [Length(0, maximum=5)]
+    }
+
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
 
 Conditional Validations
 -----------------------
@@ -389,7 +407,7 @@ You can nest validation dictionaries within each other in order to accommodate m
         }
     }
 
-The above example says that the ``bar`` key represents a dictionary that also has its own set of validations. For good measure, this example has yet another dictionary under the ``qux`` key. As long as everything checks out, ``validate`` will return the normal ``(True, {})`` response indicating success. 
+The above example says that the ``bar`` key represents a dictionary that also has its own set of validations. For good measure, this example has yet another dictionary under the ``qux`` key. As long as everything checks out, ``validate`` will return the normal ``(True, {})`` response indicating success.
 
 In the event of failure, you get an appropriately nested error message like those produced by the conditional validator. Here's an example of what such an error might look like:
 

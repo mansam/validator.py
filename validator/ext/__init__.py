@@ -26,9 +26,7 @@ that otherwise don't fit into the base part of the module.
 
 """
 
-from validator import Pattern
 from inspect import getargspec
-import string
 
 def ArgSpec(*args, **kwargs):
     """
