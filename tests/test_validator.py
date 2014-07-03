@@ -357,3 +357,37 @@ class TestValidator(object):
             "bar": "present"
         }
         assert validate(validation, test_case)[0]
+
+    def test_each_validator(self):
+        passes = {
+            "foo": [1, 2, 3, 4, 5, 6],
+            "bar": [{"qux": 1}, {"qux": 2}]
+        }
+        fails = {
+            "foo": [1, 2, 3, 4, 5, 11],
+            "bar": [{"qux": 3}, {"qux": 4, "zot": 5}]
+        }
+        validation = {
+            "foo": [Required, Each([Range(0, 10)])],
+            "bar": [Required, Each({
+                    "qux": [Required, Range(0, 2)],
+                    "zot": [In([1, 2, 3])]
+                })
+            ]
+        }
+        valid, errors = validate(validation, passes)
+        assert valid
+        assert len(errors) == 0
+        valid, errors = validate(validation, fails)
+        assert not valid
+        assert len(errors) == 2
+        assert errors == {
+            "foo": ["all values must fall between 0 and 10"],
+            "bar": [{
+                0: {"qux": ["must fall between 0 and 2"]},
+                1: {
+                    "qux": ["must fall between 0 and 2"],
+                    "zot": ["must be one of [1, 2, 3]"]
+                }
+            }]
+        }

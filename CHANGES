@@ -1,14 +1,39 @@
-v0.1.0, 1/14/2014 -- Initial release.
-v0.2.0, 1/15/2014 -- Added Classy validator and tests
-v0.2.1, 1/15/2014 -- Fixed validate continuing on a field after failing a Required validation 
-v0.2.2, 1/15/2014 -- Added Pattern regex validator and tests 
-v0.2.3, 1/15/2014 -- Added missing Not(Pattern()) error message 
-v0.3.1, 1/21/2014 -- Renamed Classy to InstanceOf, added SubclassOf
-v0.4.0, 1/23/2014 -- Added the conditional If(Then()) validator
-v0.4.1, 1/24/2014 -- Clarified the error message produced by Equals
+v1.1.0, 7/03/2014 -- Added the Each validator, which applies a set
+of validations to every element in a container.
+
+v1.0.0, 4/13/2014 -- Major version release. Default validators now
+inherit from Validator abstract class. Single validators are no
+longer required to be wrapped in a list.
+
+v0.8.0, 4/03/2014 -- Added Contains and Length validators. Created
+'validator.ext' module for extensions, moved ArgSpec into extensions.
+
+v0.7.0, 3/01/2014 -- Tests now support Python 3.x.  v0.6.1, 1/30/2014
+-- Fixed bug causing exceptions to be thrown when optional keys
+were missing.
+
+v0.6.0, 1/28/2014 -- Implemented nested validations, also removed
+the list of negated error messages out of the Not validator. All
+validators are now responsible for having their own .not_message
+attribute which should contain a negated version of their normal
+error message. Those that don't will have a generic error message
+substituted in for them.
+
 v0.5.0, 1/28/2014 -- Introduced @rossdylan's ArgSpec validator
-v0.6.0, 1/28/2014 -- Implemented nested validations, also removed the list of negated error messages out of the Not validator. All validators are now responsible for having their own .not_message attribute which should contain a negated version of their normal error message. Those that don't will have a generic error message substituted in for them.
-v0.6.1, 1/30/2014 -- Fixed bug causing exceptions to be thrown when optional keys were missing.
-v0.7.0, 3/01/2014 -- Tests now support Python 3.x.
-v0.8.0, 4/03/2014 -- Added Contains and Length validators. Created 'validator.ext' module for extensions, moved ArgSpec into extensions.
-v1.0.0, 4/13/2014 -- Major version release. Default validators now inherit from Validator abstract class. Single validators are no longer required to be wrapped in a list.
+
+v0.4.1, 1/24/2014 -- Clarified the error message produced by Equals
+
+v0.4.0, 1/23/2014 -- Added the conditional If(Then()) validator
+
+v0.3.1, 1/21/2014 -- Renamed Classy to InstanceOf, added SubclassOf
+
+v0.2.3, 1/15/2014 -- Added missing Not(Pattern()) error message
+
+v0.2.2, 1/15/2014 -- Added Pattern regex validator and tests
+
+v0.2.1, 1/15/2014 -- Fixed validate continuing on a field after
+failing a Required validation
+
+v0.2.0, 1/15/2014 -- Added Classy validator and tests
+
+v0.1.0, 1/14/2014 -- Initial release.

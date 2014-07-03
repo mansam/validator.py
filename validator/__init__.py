@@ -29,7 +29,7 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 import re
 from collections import defaultdict
@@ -440,6 +440,50 @@ class Contains(Validator):
     def __call__(self, container):
         return self.contained in container
 
+class Each(Validator):
+    """
+    Use to ensure that
+
+    If Each is passed a list of validators, it
+    just applies each of them to each element in
+    the list.
+
+    If it's instead passed a *dictionary*, it treats
+    it as a validation to be applied to each element in
+    the dictionary.
+
+    """
+
+    def __init__(self, validations):
+        assert isinstance(validations, (list, tuple, set, dict))
+        self.validations = validations
+
+    def __call__(self, container):
+        assert isinstance(container, (list, tuple, set))
+
+
+        # handle the "apply simple validation to each in list"
+        # use case
+        if isinstance(self.validations, (list, tuple, set)):
+            errors = []
+            for item in container:
+                for v in self.validations:
+                    valid = v(item)
+                    if not valid:
+                        errors.append("all values " + v.err_message)
+
+        # handle the somewhat messier list of dicts case
+        if isinstance(self.validations, dict):
+            errors = defaultdict(list)
+            for index, item in enumerate(container):
+                valid, err = validate(self.validations, item)
+                if not valid:
+                    errors[index] = err
+            errors = dict(errors)
+
+        return (len(errors) == 0, errors)
+
+
 def validate(validation, dictionary):
     """
     Validate that a dictionary passes a set of
@@ -482,7 +526,13 @@ def validate(validation, dictionary):
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
     valid = validator(dictionary[key])
-    if not valid:
+    if isinstance(valid, tuple):
+        valid, errs = valid
+        if errs and isinstance(errs, list):
+            errors[key] += errs
+        elif errs:
+            errors[key].append(errs)
+    elif not valid:
         # set a default error message for things like lambdas
         # and other callables that won't have an err_message set.
         msg = getattr(validator, "err_message", "failed validation")
@@ -499,11 +549,12 @@ def _validate_list_helper(validation, dictionary, key, errors):
                 if nested_errors:
                     errors[key].append(nested_errors)
                 continue
+
             # Done with that, on to the actual
             # validating bit.
             # Skip Required, since it was already
             # handled before this point.
-            if not v == Required:
+            elif not v == Required:
                 # special handling for the
                 # If(Then()) form
                 if isinstance(v, If):
