@@ -549,12 +549,11 @@ def _validate_list_helper(validation, dictionary, key, errors):
                 if nested_errors:
                     errors[key].append(nested_errors)
                 continue
-
             # Done with that, on to the actual
             # validating bit.
             # Skip Required, since it was already
             # handled before this point.
-            elif not v == Required:
+            if not v == Required:
                 # special handling for the
                 # If(Then()) form
                 if isinstance(v, If):
