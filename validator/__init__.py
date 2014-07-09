@@ -29,11 +29,16 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0-dev"
 
 import re
+from collections import namedtuple
 from collections import defaultdict
 from abc import ABCMeta, abstractmethod
+
+
+ValidationResult = namedtuple('ValidationResult', ['valid', 'errors'])
+
 
 def _isstr(s):
     """
@@ -520,9 +525,9 @@ def validate(validation, dictionary):
             else:
                 _validate_and_store_errs(v, dictionary, key, errors)
     if len(errors) > 0:
-        return False, dict(errors)
+        return ValidationResult(valid=False, errors=dict(errors))
     else:
-        return True, {}
+        return ValidationResult(valid=True, errors={})
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
     valid = validator(dictionary[key])
