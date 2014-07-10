@@ -32,6 +32,8 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 __version__ = "1.2.0-dev"
 
 import re
+from collections import Mapping
+from collections import Iterable
 from collections import namedtuple
 from collections import defaultdict
 from abc import ABCMeta, abstractmethod
@@ -488,19 +490,19 @@ class Each(Validator):
         return (len(errors) == 0, errors)
 
 
-def validate(validation, dictionary):
+def validate(validation, data_structure):
     """
-    Validate that a dictionary passes a set of
-    key-based validators. If all of the keys
-    in the dictionary are within the parameters
-    specified by the validation mapping, then
+    Validate that a data structure passes a set of
+    key-based validators. If all of the values
+    in the data structure are within the parameters
+    specified by the validation, then
     the validation passes.
 
     :param validation: a mapping of keys to validators
     :type validation: dict
 
-    :param dictionary: dictionary to be validated
-    :type dictionary: dict
+    :param dictionary: data structure to be validated
+    :type dictionary: collections.Mapping or collections.Iterable
 
     :return: a tuple containing a bool indicating
     success or failure and a mapping of fields
@@ -508,27 +510,41 @@ def validate(validation, dictionary):
 
     """
 
-    errors = defaultdict(list)
-    for key in validation:
-        if isinstance(validation[key], (list, tuple)):
-            if Required in validation[key]:
-                if not Required(key, dictionary):
-                    errors[key] = "must be present"
-                    continue
-            _validate_list_helper(validation, dictionary, key, errors)
-        else:
-            v = validation[key]
-            if v == Required:
-                if not Required(key, dictionary):
-                    errors[key] = "must be present"
+    if isinstance(data_structure, Mapping):
+        dictionary = data_structure
+
+        errors = defaultdict(list)
+        for key in validation:
+            if isinstance(validation[key], (list, tuple)):
+                if Required in validation[key]:
+                    if not Required(key, dictionary):
+                        errors[key] = "must be present"
+                        continue
+                _validate_list_helper(validation, dictionary, key, errors)
             else:
-                _validate_and_store_errs(v, dictionary, key, errors)
-    if len(errors) > 0:
-        # `errors` gets downgraded from defaultdict to dict
-        # because it makes for prettier output
-        return ValidationResult(valid=False, errors=dict(errors))
+                v = validation[key]
+                if v == Required:
+                    if not Required(key, dictionary):
+                        errors[key] = "must be present"
+                else:
+                    _validate_and_store_errs(v, dictionary, key, errors)
+        if len(errors) > 0:
+            # `errors` gets downgraded from defaultdict to dict
+            # because it makes for prettier output
+            return ValidationResult(valid=False, errors=dict(errors))
+        else:
+            return ValidationResult(valid=True, errors={})
+
+    # probably a list or other iterable
     else:
-        return ValidationResult(valid=True, errors={})
+        # need to temporarily convert this into a dictionary so all the
+        # prexisting DWIM magic works.
+        validation = {'__default_iterable_validator': [Each(validation)]}
+        dictionary = {'__default_iterable_validator': data_structure}
+        result = validate(validation, data_structure)
+        if len(result.errors > 0):
+            result.errors = result.errors['__default_iterable_validator']
+        return result
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
     valid = validator(dictionary[key])
