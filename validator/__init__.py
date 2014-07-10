@@ -466,7 +466,6 @@ class Each(Validator):
     def __call__(self, container):
         assert isinstance(container, (list, tuple, set))
 
-
         # handle the "apply simple validation to each in list"
         # use case
         if isinstance(self.validations, (list, tuple, set)):
@@ -525,6 +524,8 @@ def validate(validation, dictionary):
             else:
                 _validate_and_store_errs(v, dictionary, key, errors)
     if len(errors) > 0:
+        # `errors` gets downgraded from defaultdict to dict
+        # because it makes for prettier output
         return ValidationResult(valid=False, errors=dict(errors))
     else:
         return ValidationResult(valid=True, errors={})
