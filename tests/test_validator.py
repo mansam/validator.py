@@ -391,3 +391,35 @@ class TestValidator(object):
                 }
             }]
         }
+
+    @pytest.mark.xfail
+    def test_validate_primitive_list(self):
+        primitive_list = [1, 2, 3, 4]
+        passes = [Range(0, 5)]
+        fails = [Range(5, 10)]
+        valid, errors = validate(passes, primitive_list)
+        assert valid
+        assert len(errors) == 0
+        valid, errors = validate(fails, primitive_list)
+        assert not valid
+        assert len(errors) == 1
+        assert errors == ["all values must fall between 5 and 10"]
+
+    def test_validate_list(self):
+        passes = [{"qux": 1}, {"qux": 2}]
+        fails = [{"qux": 3}, {"qux": 4, "zot": 5}]
+        validation = {
+                    "qux": [Required, Range(0, 2)],
+                    "zot": [In([1, 2, 3])]
+                }
+        valid, errors = validate(validation, passes)
+        assert valid and len(errors) == 0
+        valid, errors = validate(validation, fails)
+        assert not valid
+        assert errors == {
+            0: {"qux": ["must fall between 0 and 2"]},
+            1: {
+                "qux": ["must fall between 0 and 2"],
+                "zot": ["must be one of [1, 2, 3]"]
+            }
+        }

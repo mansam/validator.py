@@ -1,4 +1,4 @@
-validator.py |Build Status| |PyPI version| |Bitdeli Badge|
+validator.py |Build Status| |PyPI version|
 ==========================================================
 
 A library for validating that dictionary values meet certain sets of
@@ -41,7 +41,7 @@ First, install it from PyPI.
         "qux": 101
     }
     print validate(rules, passes)
-    # (True, {}) 
+    # (True, {})
 
     # but this one would fail
     fails = {
@@ -63,5 +63,3 @@ First, install it from PyPI.
    :target: https://travis-ci.org/mansam/validator.py
 .. |PyPI version| image:: https://badge.fury.io/py/validator.py.png
    :target: http://badge.fury.io/py/validator.py
-.. |Bitdeli Badge| image:: https://d2weczhvl823v0.cloudfront.net/mansam/validator.py/trend.png
-   :target: https://bitdeli.com/free

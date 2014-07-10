@@ -541,10 +541,10 @@ def validate(validation, data_structure):
         # prexisting DWIM magic works.
         validation = {'__default_iterable_validator': [Each(validation)]}
         dictionary = {'__default_iterable_validator': data_structure}
-        result = validate(validation, data_structure)
-        if len(result.errors > 0):
-            result.errors = result.errors['__default_iterable_validator']
-        return result
+        valid, errors = validate(validation, dictionary)
+        if len(errors) > 0:
+            errors = errors['__default_iterable_validator'][0]
+        return ValidationResult(valid, errors)
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
     valid = validator(dictionary[key])
