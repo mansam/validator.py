@@ -391,3 +391,19 @@ class TestValidator(object):
                 }
             }]
         }
+
+    def test_exception_handling(self):
+        validation = {
+            "foo": [Required, Length(5), InstanceOf(str)]
+        }
+        test_case = {
+            "foo": 5
+        }
+        valid, errors = validate(validation, test_case)
+        assert not valid
+        assert errors == {
+            "foo": [
+                "must be at least 5 elements in length",
+                "must be an instance of str or its subclasses"
+            ]
+        }

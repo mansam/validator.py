@@ -29,7 +29,7 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.2.0-dev"
+__version__ = "1.2.0"
 
 import re
 from collections import namedtuple
@@ -531,7 +531,21 @@ def validate(validation, dictionary):
         return ValidationResult(valid=True, errors={})
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
-    valid = validator(dictionary[key])
+
+    # Validations shouldn't throw exceptions because of
+    # type mismatches and the like. If the rule is 'Length(5)' and
+    # the value in the field is 5, that should be a validation failure,
+    # not a TypeError because you can't call len() on an int.
+    # It's not ideal to have to hide exceptions like this because
+    # there could be actual problems with a validator, but we're just going
+    # to have to rely on tests preventing broken things.
+    try:
+        valid = validator(dictionary[key])
+    except:
+        # Since we caught an exception while trying to validate,
+        # treat it as a failure and return the normal error message
+        # for that validator.
+        valid = (False, validator.err_message)
     if isinstance(valid, tuple):
         valid, errs = valid
         if errs and isinstance(errs, list):

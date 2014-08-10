@@ -1,3 +1,7 @@
+v1.2.0, 8/10/2014 -- Added exception handling so that validations
+that fail because of e.g. type mismatches report a failure
+rather than blowing up.
+
 v1.1.0, 7/03/2014 -- Added the Each validator, which applies a set
 of validations to every element in a container.
 
