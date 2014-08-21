@@ -29,7 +29,7 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 import re
 from collections import namedtuple
@@ -67,7 +67,7 @@ class Validator(object):
 
     @abstractmethod
     def __call__(self, *args, **kwargs):
-        raise NotImplemented
+        raise NotImplementedError
 
 class In(Validator):
     """
@@ -541,7 +541,7 @@ def _validate_and_store_errs(validator, dictionary, key, errors):
     # to have to rely on tests preventing broken things.
     try:
         valid = validator(dictionary[key])
-    except:
+    except Exception:
         # Since we caught an exception while trying to validate,
         # treat it as a failure and return the normal error message
         # for that validator.
@@ -565,7 +565,7 @@ def _validate_list_helper(validation, dictionary, key, errors):
             # Ok, need to deal with nested
             # validations.
             if isinstance(v, dict):
-                valid, nested_errors = validate(v, dictionary[key])
+                _, nested_errors = validate(v, dictionary[key])
                 if nested_errors:
                     errors[key].append(nested_errors)
                 continue

@@ -48,7 +48,7 @@ def ArgSpec(*args, **kwargs):
     def argspec_lambda(value):
         argspec = getargspec(value)
         argspec_kw_vals = ()
-        if argspec.defaults != None:
+        if argspec.defaults is not None:
             argspec_kw_vals = argspec.defaults
         kw_vals = {}
         arg_offset = 0
