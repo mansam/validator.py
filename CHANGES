@@ -1,4 +1,4 @@
-v1.2.3, 10/21/2015 -- Added trove classifiers to setup.py so that
+v1.2.4, 10/21/2015 -- Added trove classifiers to setup.py so that
 validator.py correctly appears as Python3 compatible on PyPI.
 Added Python 3.5 to the list of tested versions.
 

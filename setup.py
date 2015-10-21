@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='validator.py',
-    version='1.2.3',
+    version='1.2.4',
     author='Samuel "mansam" Lucidi',
     author_email="sam@samlucidi.com",
     packages=['validator'],
