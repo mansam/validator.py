@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='validator.py',
-    version='1.2.4',
+    version='1.2.5',
     author='Samuel "mansam" Lucidi',
     author_email="sam@samlucidi.com",
     packages=['validator'],
@@ -21,5 +21,6 @@ setup(
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: Implementation :: PyPy"
-    ]
+    ],
+    license='MIT'
 )

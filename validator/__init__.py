@@ -29,7 +29,7 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.2.4"
+__version__ = "1.2.5"
 
 import re
 from collections import namedtuple
