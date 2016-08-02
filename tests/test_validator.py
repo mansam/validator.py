@@ -201,6 +201,21 @@ class TestValidator(object):
         }
         assert validate(validator, test_case)[0]
 
+    def test_greaterthan_validator(self):
+        validator = {
+            "greater_than": [GreaterThan(0)],
+            "lower_than": [Not(GreaterThan(0))],
+            "equal_exclusive": [Not(GreaterThan(0))],
+            "equal_inclusive": [GreaterThan(0, inclusive=True)]
+        }
+        test_case = {
+            "greater_than": 1,
+            "lower_than": -1,
+            "equal_exclusive": 0,
+            "equal_inclusive": 0
+        }
+        assert validate(validator, test_case)[0]
+
     def test_instanceof_validator(self):
         validator = {
             "classy": [Required, InstanceOf(SubClass)],

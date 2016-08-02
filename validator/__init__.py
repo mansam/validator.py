@@ -141,6 +141,36 @@ class Range(Validator):
         else:
             return self.start < value < self.end
 
+class GreaterThan(Validator):
+    """
+    Use to specify that the value of the
+    key being validated must be greater
+    than a given value. By default the
+    bound is exclusive, though the bound
+    can be made inclusive by setting
+    inclusive to true.
+
+    # Example:
+        validations = {
+            "field": [GreaterThan(10)]
+        }
+        passes = {"field": 11}
+        fails = {"field" : 10}
+
+    """
+
+    def __init__(self, lower_bound, inclusive=False):
+        self.lower_bound = lower_bound
+        self.inclusive = inclusive
+        self.err_message = "must be greater than %s" % lower_bound
+        self.not_message = "must not be greater than %s" % lower_bound
+
+    def __call__(self, value):
+        if self.inclusive:
+            return self.lower_bound <= value
+        else:
+            return self.lower_bound < value
+
 class Equals(Validator):
     """
     Use to specify that the
