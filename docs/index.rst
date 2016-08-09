@@ -196,6 +196,40 @@ You can also have Range exclude its endpoints by changing the `inclusive` keywor
     
     Range(1, 11, inclusive=False)
 
+The ``GreaterThan`` validator
+-----------------------------
+
+The ``GreaterThan`` validator checks that the dictionary value is exclusively greater than the value passed to it.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": 2
+    }
+    validation = {
+        "foo": [Required, GreaterThan(1)]
+    }
+
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value is not greater than the bound:
+
+.. code-block:: python
+
+    failure = {"foo": 1}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be greater than 1"]})
+
+You can also have GreaterThan include its bound by changing the `inclusive` keyword argument to true.
+
+.. code-block:: python
+
+    GreaterThan(1, inclusive=True)
+
+A LowerThan validator can be obtained by combining GreaterThan with the Not validator
+
 The ``Pattern`` validator
 --------------------------
 
