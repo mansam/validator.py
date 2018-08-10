@@ -422,3 +422,33 @@ class TestValidator(object):
                 "must be an instance of str or its subclasses"
             ]
         }
+
+    def test_url_validator(self):
+        passes = {
+            "foo": "http://vk.com",
+            "bar": "http://www.mail.ru/secret",
+            "foobar": "http://github.com/",
+            "baz": "http://odesk.com/query=ruby+rails",
+            "qux": "http://192.168.0.1",
+        }
+        fails = {
+            "foo": "htt://yandex.ru",
+            "bar": "httpns",
+            "foobar": "zzzz-mail",
+            "baz": "12345678",
+            "qux": "/1https://vk.com",
+        }
+        validation = {
+            "foo": [Url()],
+            "bar": [Url()],
+            "foobar": [Url()],
+            "baz": [Url()],
+            "qux": [Url()],
+        }
+        
+        valid, errors = validate(validation, passes)
+        assert valid
+        assert len(errors) == 0
+        valid, errors = validate(validation, fails)
+        assert not valid
+        assert len(errors) == 4

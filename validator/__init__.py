@@ -35,6 +35,11 @@ import re
 from collections import namedtuple
 from collections import defaultdict
 from abc import ABCMeta, abstractmethod
+try:
+    # python 3
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 
 ValidationResult = namedtuple('ValidationResult', ['valid', 'errors'])
@@ -517,6 +522,34 @@ class Each(Validator):
 
         return (len(errors) == 0, errors)
 
+class Url(Validator):
+    """
+    Use to specify that the
+    value of the key being
+    validated must be a Url.
+
+    This is a shortcut for saying
+    Url().
+
+    # Example:
+        validations = {
+            "field": [Url()]
+        }
+        passes = {"field":"http://vk.com"}
+        fails  = {"field":"/1https://vk.com"}
+
+    """
+
+    def __init__(self):
+        self.err_message = "must be a valid URL"
+        self.not_message = "must not be a valid URL"
+
+    def __call__(self, value):
+        try:
+            result = urlparse(value)
+            return all([result.scheme, result.netloc])
+        except:
+            return False
 
 def validate(validation, dictionary):
     """
