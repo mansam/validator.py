@@ -1,8 +1,7 @@
 validator.py |Build Status| |PyPI version| |Bitdeli Badge|
 ==========================================================
 
-A library for validating that dictionary values meet certain sets of
-parameters. Much like form validators, but for dicts.
+Schemas for data structures.
 
 `Documentation <http://validatorpy.readthedocs.org/en/latest/index.html>`__
 ---------------------------------------------------------------------------
