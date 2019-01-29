@@ -576,14 +576,14 @@ def validate(validation, dictionary):
         if isinstance(validation[key], (list, tuple)):
             if Required in validation[key]:
                 if not Required(key, dictionary):
-                    errors[key] = "must be present"
+                    errors[key] = ["must be present"]
                     continue
             _validate_list_helper(validation, dictionary, key, errors)
         else:
             v = validation[key]
             if v == Required:
                 if not Required(key, dictionary):
-                    errors[key] = "must be present"
+                    errors[key] = ["must be present"]
             else:
                 _validate_and_store_errs(v, dictionary, key, errors)
     if len(errors) > 0:
