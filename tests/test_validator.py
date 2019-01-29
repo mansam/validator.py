@@ -102,7 +102,7 @@ class TestValidator(object):
         assert validate(validator, int_value)[0]
         assert validate(validator, bool_value)[0]
         validity, errors = validate(validator, missing_value)
-        assert errors['truthiness'] == "must be present"
+        assert errors['truthiness'] == ["must be present"]
 
     def test_blank_validator(self):
         validator = {
