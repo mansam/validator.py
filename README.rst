@@ -1,4 +1,4 @@
-validator.py |Build Status| |PyPI version| |Bitdeli Badge|
+validator.py |Build Status| |PyPI version|
 ==========================================================
 
 Schemas for data structures.
@@ -40,7 +40,7 @@ First, install it from PyPI.
         "qux": 101
     }
     print validate(rules, passes)
-    # (True, {}) 
+    # (True, {})
 
     # but this one would fail
     fails = {
