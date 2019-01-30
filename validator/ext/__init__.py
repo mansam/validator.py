@@ -26,7 +26,11 @@ that otherwise don't fit into the base part of the module.
 
 """
 
-from inspect import getargspec
+try: # python 3
+    from inspect import getfullargspec
+    getargspec = getfullargspec
+except ImportError: # python 2
+    from inspect import getargspec
 
 def ArgSpec(*args, **kwargs):
     """

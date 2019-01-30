@@ -22,14 +22,13 @@
 """
 validator.py
 
-A library for validating that dictionary
-values fit inside of certain sets of parameters.
+A library for applying schemas to data structures.
 
 Author: Samuel Lucidi <sam@samlucidi.com>
 
 """
 
-__version__ = "1.2.5"
+__version__ = "1.3.0"
 
 import re
 from collections import namedtuple
@@ -175,6 +174,36 @@ class GreaterThan(Validator):
             return self.lower_bound <= value
         else:
             return self.lower_bound < value
+
+class LessThan(Validator):
+    """
+    Use to specify that the value of the
+    key being validated must be less
+    than a given value. By default the
+    bound is exclusive, though the bound
+    can be made inclusive by setting
+    inclusive to true.
+
+    # Example:
+        validations = {
+            "field": [LessThan(10)]
+        }
+        passes = {"field": 9}
+        fails = {"field" : 10}
+
+    """
+
+    def __init__(self, upper_bound, inclusive=False):
+        self.upper_bound = upper_bound
+        self.inclusive = inclusive
+        self.err_message = "must be less than %s" % upper_bound
+        self.not_message = "must not be less than %s" % upper_bound
+
+    def __call__(self, value):
+        if self.inclusive:
+            return value <= self.upper_bound
+        else:
+            return value < self.upper_bound
 
 class Equals(Validator):
     """
@@ -328,7 +357,7 @@ class SubclassOf(Validator):
         return issubclass(class_, self.base_class)
 
 class Pattern(Validator):
-    """
+    r"""
     Use to specify that the
     value of the key being
     validated must match the
@@ -352,6 +381,32 @@ class Pattern(Validator):
 
     def __call__(self, value):
         return self.compiled.match(value)
+
+class Url(Validator):
+    """
+    Use to specify that the
+    value of the key being
+    validated must be a Url.
+
+    # Example:
+        validations = {
+            "field": [Url()]
+        }
+        passes = {"field":"http://vk.com"}
+        fails  = {"field":"/1https://vk.com"}
+
+    """
+
+    def __init__(self):
+        self.err_message = "must be a valid URL"
+        self.not_message = "must not be a valid URL"
+
+    def __call__(self, value):
+        try:
+            result = urlparse(value)
+            return all([result.scheme, result.netloc])
+        except:
+            return False
 
 class Then(Validator):
     """
@@ -482,15 +537,43 @@ class Contains(Validator):
 
 class Each(Validator):
     """
-    Use to ensure that
+    Each applies a set of validations to each
+    element in a collection individually.
 
-    If Each is passed a list of validators, it
-    just applies each of them to each element in
-    the list.
+    If Each is specified with a list of validators,
+    then it will apply each of the validators
+    to each element in the collection to be validated.
 
-    If it's instead passed a *dictionary*, it treats
-    it as a validation to be applied to each element in
-    the dictionary.
+    # Example
+        dictionary = {
+          "list_of_length_1": [1],
+          "list_of_lists_of_length_1": [[1], [1], [1]]
+        }
+        validation = {
+            "list_of_length_1": [Length(1)],
+            "list_of_lists_of_length_1": [Each([Length(1)])]
+        }
+
+    If Each is instead specified with a dictionary,
+    Each treats it as a full validation to be applied
+    to each element in the collection to be validated.
+
+    # Example
+    dictionary = {
+        "list_of_dictionaries": [
+            {"name": "spam",  "meal": "lunch"}
+            {"name": "eggs",  "meal": "breakfast"},
+            {"name": "steak", "meal": "dinner"}
+        ]
+    }
+
+    validation = {
+        "list_of_dictionaries": [
+            Each({
+                "name": [Required, Length(4)],
+                "meal": [Required, In(["breakfast", "lunch", "dinner"])]
+            })]
+    }
 
     """
 
@@ -521,35 +604,6 @@ class Each(Validator):
             errors = dict(errors)
 
         return (len(errors) == 0, errors)
-
-class Url(Validator):
-    """
-    Use to specify that the
-    value of the key being
-    validated must be a Url.
-
-    This is a shortcut for saying
-    Url().
-
-    # Example:
-        validations = {
-            "field": [Url()]
-        }
-        passes = {"field":"http://vk.com"}
-        fails  = {"field":"/1https://vk.com"}
-
-    """
-
-    def __init__(self):
-        self.err_message = "must be a valid URL"
-        self.not_message = "must not be a valid URL"
-
-    def __call__(self, value):
-        try:
-            result = urlparse(value)
-            return all([result.scheme, result.netloc])
-        except:
-            return False
 
 def validate(validation, dictionary):
     """

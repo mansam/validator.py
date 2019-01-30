@@ -11,7 +11,7 @@ validator.py
 About
 -----
 
-``validator.py`` is a tool for ensuring that data conforms to certain sets of rules, called validations. A validation is essentially a schema for a dictionary, containing a list of rules for each key/value pair in the dictionary you want to validate. This is intended to fill a similar use case to form validations in WTForms or Rails, but for general sources of data, not just web forms. To get right on with it, here's a quick example of what this is for and how it works:
+``validator.py`` is a tool for ensuring that a data structure conforms to certain sets of rules, called validations. A validation is essentially a schema for a dictionary, containing a list of rules for each key/value pair in the dictionary you want to validate. This is intended to fill a similar use case to form validations in WTForms or Rails, but for general sources of data, not just web forms. To get right on with it, here's a quick example of what this is for and how it works:
 
 .. code-block:: python
 
@@ -56,12 +56,12 @@ Installation
 ------------
 Stable releases can be installed via ``pip install validator.py``. Alternatively, you can get the latest sources or a release tarball from http://github.com/mansam/validator.py.
 
-``validator.py`` is written with Python 2.7, but is tested with 2.6 and PyPy. It should also work with 2.5 and 3.x, though the tests currently won't run on 3.x.
+``validator.py`` is compatible with python 2.6 and 2.7, and 3.x.
 
 Getting Started with Validations
 --------------------------------
 
-A validation (the set of rules used to test a dict) can be flat --consisting of just a single level of tests-- or it can contain additional conditionally nested validations. 
+A validation (the set of rules used to test a dict) can be flat --consisting of just a single level of tests-- or it can contain additional conditionally nested validations.
 
 To create a validation, you insert a list of callables into a validation dictionary for each key/value pair in the dictionary you want to validate. When you call ``validate`` with the validation and your dictionary, each of those callables will be called with the respective value in your dictionary as their argument. If the callable returns ``True``, then you're good to go. For example:
 
@@ -73,7 +73,7 @@ To create a validation, you insert a list of callables into a validation diction
     validation = {
         "foo": [lambda x: x == "bar"]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -99,7 +99,7 @@ The ``Equals`` validator just checks that the dictionary value matches the param
     validation = {
         "foo": [Equals("bar")]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -125,7 +125,7 @@ By default, a key is considered optional. A key that's in the validation but isn
     validation = {
         "foo": [Required, Equals("bar")]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -151,7 +151,7 @@ The ``Truthy`` validator checks that the dictionary value is something that Pyth
     validation = {
         "foo": [Required, Truthy()]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -177,7 +177,7 @@ The ``Range`` validator checks that the dictionary value falls inclusively betwe
     validation = {
         "foo": [Required, Range(1, 11)]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -193,7 +193,7 @@ If the value falls outside the specified range:
 You can also have Range exclude its endpoints by changing the `inclusive` keyword argument to false.
 
 .. code-block:: python
-    
+
     Range(1, 11, inclusive=False)
 
 The ``GreaterThan`` validator
@@ -228,7 +228,37 @@ You can also have GreaterThan include its bound by changing the `inclusive` keyw
 
     GreaterThan(1, inclusive=True)
 
-A LowerThan validator can be obtained by combining GreaterThan with the Not validator
+The ``LessThan`` validator
+-----------------------------
+
+The ``LessThan`` validator checks that a value is exclusively less than the value specified.
+
+.. code-block:: python
+
+    dictionary = {
+        "foo": 2
+    }
+    validation = {
+        "foo": [Required, LessThan(3)]
+    }
+
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If the value is not less than the bound:
+
+.. code-block:: python
+
+    failure = {"foo": 3}
+    >>> validate(validation, failure)
+    (False, {"foo": ["must be less than 3"]})
+
+You can also have LessThan include its bound by changing the `inclusive` keyword argument to true.
+
+.. code-block:: python
+
+    LessThan(3, inclusive=True)
 
 The ``Pattern`` validator
 --------------------------
@@ -243,7 +273,7 @@ The ``Pattern`` validator checks that the dictionary value matches the regex pat
     validation = {
         "foo": [Required, Pattern("\d\d\%")]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -255,6 +285,24 @@ If the value doesn't match the regex:
     failure = {"foo": "99.0"}
     >>> validate(validation, failure)
     (False, {"foo": ["must match regex pattern \d\d\%"]})
+
+The ``Url`` validator
+----------------------
+
+The ``Url`` validator simply checks whether a value represents a valid URL.
+
+.. code-block:: python
+
+    dictionary = {
+      "a_website": ["www.google.com"]
+    }
+    validation = {
+      "a_website": [Required, Url()]
+    }
+
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
 
 The ``In`` validator
 --------------------------
@@ -269,7 +317,7 @@ The ``In`` validator checks that the dictionary value is a member of a collectio
     validation = {
         "foo": [Required, In(["spam", "eggs", "bacon"])]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -281,6 +329,24 @@ If the value doesn't belong to the collection:
     failure = {"foo": "beans"}
     >>> validate(validation, failure)
     (False, {"foo": ["must be one of ['spam', 'eggs', 'bacon']"]})
+
+The ``Contains`` validator
+--------------------------
+
+The ``Contains`` validator checks that the value of the key being validated contains the value passed into the Contains validator. Works with any type that supports Python's 'in' syntax.
+
+.. code-block:: python
+
+    dictionary = {
+        "breakfast_foods": ["beans", "eggs", "bacon"]
+    }
+    validation = {
+        "breakfast_foods": [Required, Contains("eggs")]
+    }
+
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
 
 The ``Not`` validator
 --------------------------
@@ -295,7 +361,7 @@ The ``Not`` validator negates a validator that is passed to it and checks the di
     validation = {
         "foo": [Required, Not(In(["spam", "eggs", "bacon"]))]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -321,7 +387,7 @@ The ``InstanceOf`` validator checks that the dictionary value is an instance of 
     validation = {
         "foo": [Required, InstanceOf(basestring)]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -347,7 +413,7 @@ The ``SubclassOf`` validator checks that the dictionary value inherits from the 
     validation = {
         "foo": [Required, InstanceOf(basestring)]
     }
-    
+
     >>> validate(validation, dictionary)
     (True, {})
     # Success!
@@ -378,6 +444,51 @@ The ``Length`` validator checks that value the must have at least `minimum` elem
     (True, {})
     # Success!
 
+The ``Each`` validator
+----------------------
+
+The ``Each`` validator applies a set of validations to each element in a collection individually.
+
+If Each is specified with a list of validators, then it will apply each of the validators to each element in the collection to be validated.
+
+.. code-block:: python
+
+    dictionary = {
+      "list_of_length_1": [1],
+      "list_of_lists_of_length_1": [[1], [1], [1]]
+    }
+    validation = {
+        "list_of_length_1": [Length(1)],
+        "list_of_lists_of_length_1": [Each([Length(1)])]
+    }
+
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
+If Each is instead specified with a dictionary, Each treats it as a full validation to be applied to each element in the collection to be validated.
+
+.. code-block:: python
+
+    dictionary = {
+        "list_of_dictionaries": [
+            {"name": "spam",  "meal": "lunch"}
+            {"name": "eggs",  "meal": "breakfast"},
+            {"name": "steak", "meal": "dinner"}
+        ]
+    }
+
+    validation = {
+        "list_of_dictionaries": [
+            Each({
+                "name": [Required, Length(4)],
+                "meal": [Required, In(["breakfast", "lunch", "dinner"])]
+            })]
+    }
+    >>> validate(validation, dictionary)
+    (True, {})
+    # Success!
+
 Conditional Validations
 -----------------------
 
@@ -401,7 +512,7 @@ In some cases you might want to apply some rules only if other validations pass.
             If(Equals("dog"), Then(dog_name_rules))
         ]
     }
-        
+
     >>> validate(validation, pet)
     (True, {})
     # Success!
@@ -458,7 +569,7 @@ This is very powerful, but you'll need to take care that you don't create confli
 More Information
 -----------------------
 
-For more information, please visit http://github.com/mansam/validator.py or contact me at mansam@csh.rit.edu. You can also send me a message on freenode if you have any questions.
+For more information, please visit http://github.com/mansam/validator.py or contact me at sam@samlucidi.com.
 
 .. |Build Status| image:: https://travis-ci.org/mansam/validator.py.png?branch=master
    :target: https://travis-ci.org/mansam/validator.py
@@ -468,4 +579,3 @@ Indices
 
 * :ref:`genindex`
 * :ref:`search`
-

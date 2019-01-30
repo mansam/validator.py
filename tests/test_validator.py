@@ -174,7 +174,7 @@ class TestValidator(object):
             "test_not_not": [Not(Not(Truthy()))],
             "test_in":      [Not(In(['one', 'two']))],
             "test_range":   [Not(Range(1, 10))],
-            "test_pattern": [Not(Pattern("\d\d\d"))]
+            "test_pattern": [Not(Pattern(r"\d\d\d"))]
         }
         test_case = {
             "test_truthy": False,
@@ -216,6 +216,21 @@ class TestValidator(object):
         }
         assert validate(validator, test_case)[0]
 
+    def test_lessthan_validator(self):
+        validator = {
+            "less_than": [LessThan(0)],
+            "greater_than": [Not(LessThan(0))],
+            "equal_exclusive": [Not(LessThan(0))],
+            "equal_inclusive": [LessThan(0, inclusive=True)]
+        }
+        test_case = {
+            "less_than": -1,
+            "greater_than": 1,
+            "equal_exclusive": 0,
+            "equal_inclusive": 0
+        }
+        assert validate(validator, test_case)[0]
+
     def test_instanceof_validator(self):
         validator = {
             "classy": [Required, InstanceOf(SubClass)],
@@ -244,8 +259,8 @@ class TestValidator(object):
 
     def test_pattern_validator(self):
         validator = {
-            "match": [Required, Pattern('\d\d\%')],
-            "no_match": [Required, Not(Pattern('\d\d\%'))]
+            "match": [Required, Pattern(r'\d\d\%')],
+            "no_match": [Required, Not(Pattern(r'\d\d\%'))]
         }
         test_case = {
             "match": "39%",
@@ -445,7 +460,7 @@ class TestValidator(object):
             "baz": [Url()],
             "qux": [Url()],
         }
-        
+
         valid, errors = validate(validation, passes)
         assert valid
         assert len(errors) == 0
