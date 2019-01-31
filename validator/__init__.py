@@ -357,7 +357,7 @@ class SubclassOf(Validator):
         return issubclass(class_, self.base_class)
 
 class Pattern(Validator):
-    r"""
+    """
     Use to specify that the
     value of the key being
     validated must match the
