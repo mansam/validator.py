@@ -605,6 +605,17 @@ class Each(Validator):
 
         return (len(errors) == 0, errors)
 
+
+class Email(Validator):
+
+    def __init__(self):
+        self.err_message = "must be a valid email"
+        self.not_message = "must not be a valid email"
+
+    def __call__(self, email):
+        return re.compile(r"^[^.].+@([?)[a-zA-Z0-9-.])+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$").match(email)
+
+
 def validate(validation, dictionary):
     """
     Validate that a dictionary passes a set of

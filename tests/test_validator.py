@@ -467,3 +467,41 @@ class TestValidator(object):
         valid, errors = validate(validation, fails)
         assert not valid
         assert len(errors) == 4
+
+    def test_email_validator(self):
+        passes = {
+            "foo": "joe@google.com",
+            "bar": "test@web.google.com",
+            "baz": "email@123.123.123.123",
+            "barbaz": "test+email@123.123.123.123",
+            "foobar": "test@site.co",
+            "foobarbaz": '"email"@domain.com',
+            "foobarbazfoo": "email@domain-one.com",
+
+        }
+
+        fails = {
+            "foo": "@domain.com",
+            "bar": "test",
+            "baz": "Joe Smith <email@domain.com>",
+            "barbaz": ".email@domain.com",
+            "foobar": "test@",
+        }
+
+        validation = {
+            "foo": [Email()],
+            "bar": [Email()],
+            "baz": [Email()],
+            "barbaz": [Email()],
+            "foobar": [Email()],
+            "foobarbaz": [Email()],
+            "foobarbazfoo": [Email()],
+        }
+        
+        valid,errors = validate(validation, passes)
+        assert valid
+        assert len(errors) == 0
+
+        valid,errors = validate(validation, fails)
+        assert not valid
+        assert len(errors) == len(fails)
