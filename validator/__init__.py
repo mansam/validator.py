@@ -607,6 +607,22 @@ class Each(Validator):
 
 
 class Email(Validator):
+    """
+    Email verifies if the string given is structured as a valid 
+    email address.
+
+    This does not protect against every possible combination of 
+    email addresses but does a good job to shield against invalid ones.
+
+    # Example
+        dictionary = {
+            "foo": "joe@google.com",
+        }
+
+        validation = {
+            "foo": [Email()],
+        }
+    """
 
     def __init__(self):
         self.err_message = "must be a valid email"
