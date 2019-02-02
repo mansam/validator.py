@@ -647,6 +647,20 @@ def validate(validation, dictionary):
     else:
         return ValidationResult(valid=True, errors={})
 
+class ValidationMapper:
+
+    validators = {
+        'required': Required,
+        'email': Email(),
+    }
+
+    def make(self, string):
+        parsed_validators = string.split('|')
+        list_validation = []
+        for validation in parsed_validators:
+            list_validation.append(self.validators[validation])
+        return list_validation
+
 def _validate_and_store_errs(validator, dictionary, key, errors):
 
     # Validations shouldn't throw exceptions because of

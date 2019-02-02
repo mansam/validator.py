@@ -467,3 +467,14 @@ class TestValidator(object):
         valid, errors = validate(validation, fails)
         assert not valid
         assert len(errors) == 4
+
+class TestValidationMapper:
+
+    def setup_method(self):
+        self.mapper = ValidationMapper()
+    
+    def test_can_make_required(self):
+        assert self.mapper.make('required') == [Required]
+
+    def test_can_make_multiple_from_string(self):
+        assert self.mapper.make('required|email') == [Required, Email()]
