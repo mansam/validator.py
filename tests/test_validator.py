@@ -533,7 +533,7 @@ class TestValidationMapper:
         }
 
         validation = {
-            "foo": 'email|required',
+            "foo": ['email|length:1,18', Required],
         }
 
         valid, errors = validate(validation, passes)

@@ -758,10 +758,7 @@ def _validate_and_store_errs(validator, dictionary, key, errors):
     # there could be actual problems with a validator, but we're just going
     # to have to rely on tests preventing broken things.
     try:
-        if isinstance(validator, str):
-            valid = ValidationMapper().make(validator)[0](dictionary[key])
-        else:
-            valid = validator(dictionary[key])
+        valid = validator(dictionary[key])
     except Exception:
         # Since we caught an exception while trying to validate,
         # treat it as a failure and return the normal error message
@@ -807,4 +804,8 @@ def _validate_list_helper(validation, dictionary, key, errors):
                         errors[key].append(dependent[1])
                 # handling for normal validators
                 else:
-                    _validate_and_store_errs(v, dictionary, key, errors)
+                    if isinstance(v, str):
+                        for validation in ValidationMapper().make(v):
+                            _validate_and_store_errs(validation, dictionary, key, errors)
+                    else:
+                        _validate_and_store_errs(v, dictionary, key, errors)
