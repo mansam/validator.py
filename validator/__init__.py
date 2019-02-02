@@ -687,7 +687,7 @@ class ValidationMapper:
         ValidationMapper().make('required|length:1,8')
     
     which then returns:
-    
+
         [Required, Length(1,8)]
     """
     validators = {
@@ -699,6 +699,11 @@ class ValidationMapper:
         'equals': Equals,
         'contains': Contains,
         'pattern': Pattern,
+        'truthy': Truthy,
+        'blank': Blank,
+        'lessthan': LessThan,
+        'greaterthan': GreaterThan,
+        'range': Range,
     }
 
     def make(self, string):
@@ -753,7 +758,10 @@ def _validate_and_store_errs(validator, dictionary, key, errors):
     # there could be actual problems with a validator, but we're just going
     # to have to rely on tests preventing broken things.
     try:
-        valid = validator(dictionary[key])
+        if isinstance(validator, str):
+            valid = ValidationMapper().make(validator)[0](dictionary[key])
+        else:
+            valid = validator(dictionary[key])
     except Exception:
         # Since we caught an exception while trying to validate,
         # treat it as a failure and return the normal error message
