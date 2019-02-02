@@ -507,21 +507,20 @@ class TestValidator(object):
         assert len(errors) == len(fails)
 
 
-class TestValidationMapper:
+mapper = ValidationMapper()
 
-    def setup_method(self):
-        self.mapper = ValidationMapper()
+class TestValidationMapper:
     
     def test_can_make_required(self):
-        assert self.mapper.make('required') == [Required]
+        assert mapper.make('required') == [Required]
 
     def test_can_make_multiple_from_string(self):
-        validator = self.mapper.make('required|email')
+        validator = mapper.make('required|email')
         assert validator[0] == Required
         assert isinstance(validator[1], Email)
 
     def test_can_make_multiple_from_string_with_inputs(self):
-        validator = self.mapper.make('length:1,2')
+        validator = mapper.make('length:1,2')
         assert isinstance(validator[0], Length)
 
     def test_can_pass_validation(self):
