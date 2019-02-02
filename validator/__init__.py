@@ -694,7 +694,7 @@ class ValidationMapper:
             args = []
             if ":" in validation:
                 args = validation.split(':')[1].split(',')
-                args = [int(elem) for elem in args if elem.isnumeric()]
+                args = [int(elem) for elem in args if unicode(elem, 'utf-8').isnumeric()]
                 validation = validation.split(':')[0]
 
             if args:
