@@ -679,7 +679,17 @@ def validate(validation, dictionary):
         return ValidationResult(valid=True, errors={})
 
 class ValidationMapper:
+    """This class is used to convert a string to a list of validators to
+    then be used in the normal validation flow.
 
+    For example, this class can be used as:
+
+        ValidationMapper().make('required|length:1,8')
+    
+    which then returns:
+    
+        [Required, Length(1,8)]
+    """
     validators = {
         'required': Required,
         'email': Email,
@@ -687,18 +697,29 @@ class ValidationMapper:
         'in': In,
         'url': Url,
         'equals': Equals,
-        'contains': Contains
+        'contains': Contains,
+        'pattern': Pattern,
     }
 
     def make(self, string):
+        """
+        Makes a validation list based on a string.
+        
+        :param string: The validation string to be parsed into a list. 
+        This can be something like 'required|length:4,2'
+        :type string: string
+        
+        :return: Returns a list of validators.
+        """
         parsed_validators = string.split('|')
         list_validation = []
         for validation in parsed_validators:
             args = []
             if ":" in validation:
                 args = validation.split(':')[1].split(',')
-                args = [int(elem) for elem in args if elem.isnumeric()]
                 validation = validation.split(':')[0]
+                if hasattr(self, '{}_arg_rule'.format(validation)):
+                    args = getattr(self, '{}_arg_rule'.format(validation))(*args)
 
             if args:
                 validator = self.validators[validation](*args)
@@ -707,9 +728,20 @@ class ValidationMapper:
                 if not inspect.isfunction(validator) and callable(validator):
                     validator = validator(*args)
 
-            
             list_validation.append(validator)
         return list_validation
+
+    def length_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        return [int(elem) for elem in args if elem.isnumeric()]
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
 

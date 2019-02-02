@@ -259,7 +259,8 @@ class TestValidator(object):
 
     def test_pattern_validator(self):
         validator = {
-            "match": [Required, Pattern(r'\d\d\%')],
+            # "match": [Required, Pattern(r'')],
+            "match": 'required|pattern:\d\d\%',
             "no_match": [Required, Not(Pattern(r'\d\d\%'))]
         }
         test_case = {
@@ -532,7 +533,7 @@ class TestValidationMapper:
         }
 
         validation = {
-            "foo": 'email:required',
+            "foo": 'email|required',
         }
 
         valid, errors = validate(validation, passes)
