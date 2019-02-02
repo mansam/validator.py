@@ -31,6 +31,7 @@ Author: Samuel Lucidi <sam@samlucidi.com>
 __version__ = "1.3.0"
 
 import re
+import inspect
 from collections import namedtuple
 from collections import defaultdict
 from abc import ABCMeta, abstractmethod
@@ -605,6 +606,33 @@ class Each(Validator):
 
         return (len(errors) == 0, errors)
 
+
+class Email(Validator):
+    """
+    Email verifies if the string given is structured as a valid 
+    email address.
+
+    This does not protect against every possible combination of 
+    email addresses but does a good job to shield against invalid ones.
+
+    # Example
+        dictionary = {
+            "foo": "joe@google.com",
+        }
+
+        validation = {
+            "foo": [Email()],
+        }
+    """
+
+    def __init__(self):
+        self.err_message = "must be a valid email"
+        self.not_message = "must not be a valid email"
+
+    def __call__(self, email):
+        return re.compile(r"^[^.].+@([?)[a-zA-Z0-9-.])+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$").match(email)
+
+
 def validate(validation, dictionary):
     """
     Validate that a dictionary passes a set of
@@ -633,6 +661,9 @@ def validate(validation, dictionary):
                     errors[key] = ["must be present"]
                     continue
             _validate_list_helper(validation, dictionary, key, errors)
+        elif isinstance(validation[key], str):
+            validation[key] = ValidationMapper().make(validation[key])
+            _validate_list_helper(validation, dictionary, key, errors)
         else:
             v = validation[key]
             if v == Required:
@@ -651,14 +682,30 @@ class ValidationMapper:
 
     validators = {
         'required': Required,
-        'email': Email(),
+        'email': Email,
+        'length': Length,
+        'in': In,
     }
 
     def make(self, string):
         parsed_validators = string.split('|')
         list_validation = []
         for validation in parsed_validators:
-            list_validation.append(self.validators[validation])
+            args = []
+            if ":" in validation:
+                args = validation.split(':')[1].split(',')
+                args = [int(elem) for elem in args if elem.isnumeric()]
+                validation = validation.split(':')[0]
+
+            if args:
+                validator = self.validators[validation](*args)
+            else:
+                validator = self.validators[validation]
+                if not inspect.isfunction(validator) and callable(validator):
+                    validator = validator(*args)
+
+            
+            list_validation.append(validator)
         return list_validation
 
 def _validate_and_store_errs(validator, dictionary, key, errors):

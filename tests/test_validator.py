@@ -468,6 +468,45 @@ class TestValidator(object):
         assert not valid
         assert len(errors) == 4
 
+    def test_email_validator(self):
+        passes = {
+            "foo": "joe@google.com",
+            "bar": "test@web.google.com",
+            "baz": "email@123.123.123.123",
+            "barbaz": "test+email@123.123.123.123",
+            "foobar": "test@site.co",
+            "foobarbaz": '"email"@domain.com',
+            "foobarbazfoo": "email@domain-one.com",
+
+        }
+
+        fails = {
+            "foo": "@domain.com",
+            "bar": "test",
+            "baz": "Joe Smith <email@domain.com>",
+            "barbaz": ".email@domain.com",
+            "foobar": "test@",
+        }
+
+        validation = {
+            "foo": [Required, Email()],
+            "bar": [Email()],
+            "baz": [Email()],
+            "barbaz": [Email()],
+            "foobar": [Email()],
+            "foobarbaz": [Email()],
+            "foobarbazfoo": [Email()],
+        }
+
+        valid, errors = validate(validation, passes)
+        assert valid
+        assert len(errors) == 0
+
+        valid, errors = validate(validation, fails)
+        assert not valid
+        assert len(errors) == len(fails)
+
+
 class TestValidationMapper:
 
     def setup_method(self):
@@ -477,4 +516,31 @@ class TestValidationMapper:
         assert self.mapper.make('required') == [Required]
 
     def test_can_make_multiple_from_string(self):
-        assert self.mapper.make('required|email') == [Required, Email()]
+        validator = self.mapper.make('required|email')
+        assert validator[0] == Required
+        assert isinstance(validator[1], Email)
+
+    def test_can_make_multiple_from_string_with_inputs(self):
+        validator = self.mapper.make('length:1,2')
+        assert isinstance(validator[0], Length)
+
+    def test_can_pass_validation(self):
+        passes = {
+            "foo": "joe@google.com",
+        }
+
+        fails = {
+            "foo": "@domain.com",
+        }
+
+        validation = {
+            "foo": 'email:required',
+        }
+
+        valid, errors = validate(validation, passes)
+        assert valid
+        assert len(errors) == 0
+
+        valid, errors = validate(validation, fails)
+        assert not valid
+        assert len(errors) == len(fails)
