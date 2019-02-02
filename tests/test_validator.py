@@ -454,7 +454,7 @@ class TestValidator(object):
             "qux": "/1https://vk.com",
         }
         validation = {
-            "foo": [Url()],
+            "foo": 'url',
             "bar": [Url()],
             "foobar": [Url()],
             "baz": [Url()],
@@ -477,7 +477,6 @@ class TestValidator(object):
             "foobar": "test@site.co",
             "foobarbaz": '"email"@domain.com',
             "foobarbazfoo": "email@domain-one.com",
-
         }
 
         fails = {

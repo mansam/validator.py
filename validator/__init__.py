@@ -685,6 +685,9 @@ class ValidationMapper:
         'email': Email,
         'length': Length,
         'in': In,
+        'url': Url,
+        'equals': Equals,
+        'contains': Contains
     }
 
     def make(self, string):
