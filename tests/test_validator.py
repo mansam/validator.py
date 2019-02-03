@@ -483,32 +483,23 @@ class TestValidator(object):
                 })
             ]
         }
-        str_validation = {
-            "foo": [Required, Each([Range(0, 10)])],
-            "bar": [Required, Each({
-                    "qux": [Required, Range(0, 2)],
-                    "zot": [In([1, 2, 3])]
-                })
-            ]
-        }
         
-        for validation in (validation, str_validation):
-            valid, errors = validate(validation, passes)
-            assert valid
-            assert len(errors) == 0
-            valid, errors = validate(validation, fails)
-            assert not valid
-            assert len(errors) == 2
-            assert errors == {
-                "foo": ["all values must fall between 0 and 10"],
-                "bar": [{
-                    0: {"qux": ["must fall between 0 and 2"]},
-                    1: {
-                        "qux": ["must fall between 0 and 2"],
-                        "zot": ["must be one of [1, 2, 3]"]
-                    }
-                }]
-            }
+        valid, errors = validate(validation, passes)
+        assert valid
+        assert len(errors) == 0
+        valid, errors = validate(validation, fails)
+        assert not valid
+        assert len(errors) == 2
+        assert errors == {
+            "foo": ["all values must fall between 0 and 10"],
+            "bar": [{
+                0: {"qux": ["must fall between 0 and 2"]},
+                1: {
+                    "qux": ["must fall between 0 and 2"],
+                    "zot": ["must be one of [1, 2, 3]"]
+                }
+            }]
+        }
 
     def test_exception_handling(self):
         validation = {
@@ -542,19 +533,28 @@ class TestValidator(object):
             "qux": "/1https://vk.com",
         }
         validation = {
-            "foo": 'url',
+            "foo": [Url()],
             "bar": [Url()],
             "foobar": [Url()],
             "baz": [Url()],
             "qux": [Url()],
         }
 
-        valid, errors = validate(validation, passes)
-        assert valid
-        assert len(errors) == 0
-        valid, errors = validate(validation, fails)
-        assert not valid
-        assert len(errors) == 4
+        str_validation = {
+            "foo": 'url',
+            "bar": 'url',
+            "foobar": 'url',
+            "baz": 'url',
+            "qux": 'url',
+        }
+        
+        for validation in (validation, str_validation):
+            valid, errors = validate(validation, passes)
+            assert valid
+            assert len(errors) == 0
+            valid, errors = validate(validation, fails)
+            assert not valid
+            assert len(errors) == 4
 
     def test_email_validator(self):
         passes = {
@@ -576,7 +576,7 @@ class TestValidator(object):
         }
 
         validation = {
-            "foo": [Required, Email()],
+            "foo": [Email()],
             "bar": [Email()],
             "baz": [Email()],
             "barbaz": [Email()],
@@ -585,13 +585,24 @@ class TestValidator(object):
             "foobarbazfoo": [Email()],
         }
 
-        valid, errors = validate(validation, passes)
-        assert valid
-        assert len(errors) == 0
+        str_validation = {
+            "foo": 'email',
+            "bar": 'email',
+            "baz": 'email',
+            "barbaz": 'email',
+            "foobar": 'email',
+            "foobarbaz": 'email',
+            "foobarbazfoo": 'email',
+        }
 
-        valid, errors = validate(validation, fails)
-        assert not valid
-        assert len(errors) == len(fails)
+        for validation in (validation, str_validation):
+            valid, errors = validate(validation, passes)
+            assert valid
+            assert len(errors) == 0
+
+            valid, errors = validate(validation, fails)
+            assert not valid
+            assert len(errors) == len(fails)
 
 
 mapper = ValidationMapper()
