@@ -339,20 +339,19 @@ class TestValidator(object):
 
     def test_contains_validator(self):
         validation = {
-            # "foo": [Required, Contains("1")],
-            # "qux": [Required, Not(Contains("1"))]
+            "foo": [Required, Contains("1")],
             "qux": 'required|not.contains:1' #== [Required, Not(Contains("1"))]
         }
         test_case_list = {
-            # "foo": ["1", "2", "3"],
+            "foo": ["1", "2", "3"],
             "qux": ["2", "3", "4"]
         }
         test_case_dict = {
-            # "foo": {"1": "one", "2": "two"},
+            "foo": {"1": "one", "2": "two"},
             "qux": {"2": "two", "3": "three"}
         }
         test_case_substring = {
-            # "foo": "test1case",
+            "foo": "test1case",
             "qux": "barbaz"
         }
         assert validate(validation, test_case_list)[0]
