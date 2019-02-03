@@ -706,6 +706,7 @@ class ValidationMapper:
         'range': Range,
         'not': Not,
         '!': Not,
+        'each': Each
     }
 
     def make(self, string):
@@ -754,6 +755,87 @@ class ValidationMapper:
         :return: list
         """
         return [int(elem) for elem in args if elem.isdigit()]
+
+    def in_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        args = [int(elem) for elem in args if elem.isdigit()]
+        return [args]
+
+    def each_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        # args = [int(elem) for elem in args if elem.isdigit()]
+        return [args]
+
+    def range_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        return [int(elem) for elem in args if elem.isdigit()]
+
+    def greaterthan_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        return [int(args[0])]
+ 
+    def lessthan_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        return [int(args[0])]
+
+    def equals_arg_rule(self, *args):
+        """
+        Special rule for the length validator.
+
+        This special rule is passed an *args list and then must return an iterable
+        to then be passed into the actual argument list of the validator. This is
+        useful for converting necessary parameters such as integer casting.
+        
+        :return: list
+        """
+        arg_list = []
+        for elem in args:
+            if elem.isdigit():
+                arg_list.append(int(elem))
+            else:
+                arg_list.append(elem)
+
+        return arg_list
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
 

@@ -62,11 +62,17 @@ class TestValidator(object):
         assert validate(validator, values)[0]
         assert validate(kw_validator, values_kw)[0]
 
-    def test_truthy_validator(self):
+    def test_truthy_validator(self): 
         validator = {
             "truthiness": [Truthy()],
             "falsiness": [Not(Truthy())]
         }
+
+        str_validator = {
+            "truthiness": 'truthy',
+            "falsiness": 'not.truthy'
+        }
+
         str_value = {
             "truthiness": "test",
             "falsiness": ""
@@ -79,15 +85,23 @@ class TestValidator(object):
             "truthiness": True,
             "falsiness": False
         }
-        assert validate(validator, str_value)[0]
-        assert validate(validator, int_value)[0]
-        assert validate(validator, bool_value)[0]
+
+        for validator in (str_validator, validator):
+            assert validate(validator, str_value)[0]
+            assert validate(validator, int_value)[0]
+            assert validate(validator, bool_value)[0]
 
     def test_required_validator(self):
         validator = {
             "truthiness": [Required],
             "falsiness": []
         }
+
+        str_validator = {
+            "truthiness": 'required',
+            "falsiness": []
+        }
+
         str_value = {
             "truthiness": "test"
         }
@@ -98,17 +112,24 @@ class TestValidator(object):
             "truthiness": True
         }
         missing_value = {}
-        assert validate(validator, str_value)[0]
-        assert validate(validator, int_value)[0]
-        assert validate(validator, bool_value)[0]
-        validity, errors = validate(validator, missing_value)
-        assert errors['truthiness'] == ["must be present"]
+        for validator in (validator, str_validator):
+            assert validate(validator, str_value)[0]
+            assert validate(validator, int_value)[0]
+            assert validate(validator, bool_value)[0]
+            validity, errors = validate(validator, missing_value)
+            assert errors['truthiness'] == ["must be present"]
 
     def test_blank_validator(self):
         validator = {
             "truthiness": [Blank()],
             "falsiness": [Not(Blank())]
         }
+
+        str_validator = {
+            "truthiness": 'blank',
+            "falsiness": 'not.blank'
+        }
+
         str_value = {
             "truthiness": "",
             "falsiness": "not_blank"
@@ -121,51 +142,44 @@ class TestValidator(object):
             "truthiness": True,
             "falsiness": False
         }
-        assert validate(validator, str_value)[0]
-        assert not validate(validator, int_value)[0]
-        assert not validate(validator, bool_value)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, str_value)[0]
+            assert not validate(validator, int_value)[0]
+            assert not validate(validator, bool_value)[0]
 
     def test_in_validator(self):
         validator = {
-            "truthiness": [Truthy()],
-            "falsiness": [Not(Truthy())]
+            "truthiness": [In([1,2])],
+            "falsiness": [Not(In([1, 2]))]
         }
-        str_value = {
-            "truthiness": "test",
-            "falsiness": ""
+        str_validator = {
+            "truthiness": 'in:1,2',
+            "falsiness": 'not.in:1,2'
         }
         int_value = {
             "truthiness": 1,
-            "falsiness": 0
+            "falsiness": 3
         }
-        bool_value = {
-            "truthiness": True,
-            "falsiness": False
-        }
-        assert validate(validator, str_value)[0]
-        assert validate(validator, int_value)[0]
-        assert validate(validator, bool_value)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, int_value)[0]
 
     def test_equals_validator(self):
         validator = {
-            "truthiness": [Truthy()],
-            "falsiness": [Not(Truthy())]
+            "truthiness": [Equals('test')],
+            "falsiness": [Not(Equals('test'))]
         }
+
+        str_validator = {
+            "truthiness": 'equals:test',
+            "falsiness": ['not.equals:test']
+        }
+
         str_value = {
             "truthiness": "test",
-            "falsiness": ""
+            "falsiness": "nottest"
         }
-        int_value = {
-            "truthiness": 1,
-            "falsiness": 0
-        }
-        bool_value = {
-            "truthiness": True,
-            "falsiness": False
-        }
-        assert validate(validator, str_value)[0]
-        assert validate(validator, int_value)[0]
-        assert validate(validator, bool_value)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, str_value)[0]
 
     def test_not_validator(self):
         validator = {
@@ -176,6 +190,15 @@ class TestValidator(object):
             "test_range":   [Not(Range(1, 10))],
             "test_pattern": [Not(Pattern(r"\d\d\d"))]
         }
+
+        str_validator = {
+            "test_truthy":  'not.truthy',
+            "test_equals":  'not.equals:one',
+            "test_not_not": [Not(Not(Truthy()))],
+            "test_in":      'not.in:one,two',
+            "test_range":   'not.range:1,10',
+            "test_pattern": 'not.pattern:\d\d\d'
+        }
         test_case = {
             "test_truthy": False,
             "test_equals": "two",
@@ -184,7 +207,8 @@ class TestValidator(object):
             "test_range": 11,
             "test_pattern": "abc"
         }
-        assert validate(validator, test_case)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, test_case)[0]
 
     def test_range_validator(self):
         validator = {
@@ -193,13 +217,22 @@ class TestValidator(object):
             "exclusive_in_range": [Range(1, 10, inclusive=False)],
             "exclusive_out_of_range": [Not(Range(1, 10, inclusive=False))]
         }
+
+        str_validator = {
+            "in_range": 'range:1,10',
+            "out_of_range": 'not.range:1,10',
+            "exclusive_in_range": [Range(1, 10, inclusive=False)],
+            "exclusive_out_of_range": [Not(Range(1, 10, inclusive=False))]
+        }
+
         test_case = {
             "in_range": 1,
             "out_of_range": 11,
             "exclusive_in_range": 2,
             "exclusive_out_of_range": 1
         }
-        assert validate(validator, test_case)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, test_case)[0]
 
     def test_greaterthan_validator(self):
         validator = {
@@ -208,13 +241,20 @@ class TestValidator(object):
             "equal_exclusive": [Not(GreaterThan(0))],
             "equal_inclusive": [GreaterThan(0, inclusive=True)]
         }
+        str_validator = {
+            "greater_than": 'greaterthan:0',
+            "lower_than": 'not.greaterthan:0',
+            "equal_exclusive": 'not.greaterthan:0',
+            "equal_inclusive": [GreaterThan(0, inclusive=True)]
+        }
         test_case = {
             "greater_than": 1,
             "lower_than": -1,
             "equal_exclusive": 0,
             "equal_inclusive": 0
         }
-        assert validate(validator, test_case)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, test_case)[0]
 
     def test_lessthan_validator(self):
         validator = {
@@ -223,13 +263,20 @@ class TestValidator(object):
             "equal_exclusive": [Not(LessThan(0))],
             "equal_inclusive": [LessThan(0, inclusive=True)]
         }
+        str_validator = {
+            "less_than": 'lessthan:0',
+            "greater_than": 'not.lessthan:0',
+            "equal_exclusive": 'not.lessthan:0',
+            "equal_inclusive": [LessThan(0, inclusive=True)]
+        }
         test_case = {
             "less_than": -1,
             "greater_than": 1,
             "equal_exclusive": 0,
             "equal_inclusive": 0
         }
-        assert validate(validator, test_case)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, test_case)[0]
 
     def test_instanceof_validator(self):
         validator = {
@@ -259,15 +306,20 @@ class TestValidator(object):
 
     def test_pattern_validator(self):
         validator = {
-            # "match": [Required, Pattern(r'')],
-            "match": 'required|pattern:\d\d\%',
+            "match": [Required, Pattern(r'')],
             "no_match": [Required, Not(Pattern(r'\d\d\%'))]
         }
+        str_validator = {
+            "match": 'required|pattern:',
+            "no_match": 'required|not.pattern:\d\d\%'
+        }
+
         test_case = {
             "match": "39%",
             "no_match": "ab%"
         }
-        assert validate(validator, test_case)[0]
+        for validator in (validator, str_validator):
+            assert validate(validator, test_case)[0]
 
     def test_conditional_validator(self):
         passes = {
@@ -340,8 +392,14 @@ class TestValidator(object):
     def test_contains_validator(self):
         validation = {
             "foo": [Required, Contains("1")],
+            "qux": [Required, Not(Contains("1"))]
+        }
+
+        str_validation = {
+            "foo": 'required|contains:1',
             "qux": 'required|not.contains:1' #== [Required, Not(Contains("1"))]
         }
+
         test_case_list = {
             "foo": ["1", "2", "3"],
             "qux": ["2", "3", "4"]
@@ -354,9 +412,10 @@ class TestValidator(object):
             "foo": "test1case",
             "qux": "barbaz"
         }
-        assert validate(validation, test_case_list)[0]
-        assert validate(validation, test_case_dict)[0]
-        assert validate(validation, test_case_substring)[0]
+        for validation in (validation, str_validation):
+            assert validate(validation, test_case_list)[0]
+            assert validate(validation, test_case_dict)[0]
+            assert validate(validation, test_case_substring)[0]
 
     def test_length_validator(self):
         with pytest.raises(ValueError):
@@ -367,27 +426,45 @@ class TestValidator(object):
             "foo": [Required, Length(5), Length(1, maximum=5)],
             "bar": [Required, Length(0, maximum=10)]
         }
+        str_passes = {
+            "foo": 'required|length:5|length:1,5',
+            "bar": 'required|length:0,10',
+        }
+
         fails = {
             "foo": [Required, Length(8), Length(1, maximum=11)],
             "bar": [Required, Length(0, maximum=3)]
         }
+        str_fails = {
+            "foo": 'required|length:9|length:1,11',
+            "bar": 'required|length:0,3'
+        }
+
         test_case = {
             "foo": "12345",
             "bar": [1, 2, 3, 4, 5],
         }
-        assert validate(passes, test_case)[0]
-        assert not validate(fails, test_case)[0]
+
+        for passes in (passes, str_passes):
+            assert validate(passes, test_case)[0]
+        for fails in (fails, str_fails):
+            assert not validate(fails, test_case)[0]
 
     def test_validator_without_list(self):
         validation = {
             "foo": Equals(5),
             "bar": Required
         }
+        str_validation = {
+            "foo": 'equals:5',
+            "bar": 'required'
+        }
         test_case = {
             "foo": 5,
             "bar": "present"
         }
-        assert validate(validation, test_case)[0]
+        for validation in (validation, str_validation):
+            assert validate(validation, test_case)[0]
 
     def test_each_validator(self):
         passes = {
@@ -406,22 +483,32 @@ class TestValidator(object):
                 })
             ]
         }
-        valid, errors = validate(validation, passes)
-        assert valid
-        assert len(errors) == 0
-        valid, errors = validate(validation, fails)
-        assert not valid
-        assert len(errors) == 2
-        assert errors == {
-            "foo": ["all values must fall between 0 and 10"],
-            "bar": [{
-                0: {"qux": ["must fall between 0 and 2"]},
-                1: {
-                    "qux": ["must fall between 0 and 2"],
-                    "zot": ["must be one of [1, 2, 3]"]
-                }
-            }]
+        str_validation = {
+            "foo": [Required, Each([Range(0, 10)])],
+            "bar": [Required, Each({
+                    "qux": [Required, Range(0, 2)],
+                    "zot": [In([1, 2, 3])]
+                })
+            ]
         }
+        
+        for validation in (validation, str_validation):
+            valid, errors = validate(validation, passes)
+            assert valid
+            assert len(errors) == 0
+            valid, errors = validate(validation, fails)
+            assert not valid
+            assert len(errors) == 2
+            assert errors == {
+                "foo": ["all values must fall between 0 and 10"],
+                "bar": [{
+                    0: {"qux": ["must fall between 0 and 2"]},
+                    1: {
+                        "qux": ["must fall between 0 and 2"],
+                        "zot": ["must be one of [1, 2, 3]"]
+                    }
+                }]
+            }
 
     def test_exception_handling(self):
         validation = {
