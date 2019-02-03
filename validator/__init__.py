@@ -753,7 +753,7 @@ class ValidationMapper:
         
         :return: list
         """
-        return [int(elem) for elem in args if elem.isnumeric()]
+        return [int(elem) for elem in args if elem.isdigit()]
 
 def _validate_and_store_errs(validator, dictionary, key, errors):
 
