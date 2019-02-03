@@ -704,6 +704,8 @@ class ValidationMapper:
         'lessthan': LessThan,
         'greaterthan': GreaterThan,
         'range': Range,
+        'not': Not,
+        '!': Not,
     }
 
     def make(self, string):
@@ -720,6 +722,11 @@ class ValidationMapper:
         list_validation = []
         for validation in parsed_validators:
             args = []
+            if '.' in validation:
+                rule = validation.split('.')[0]
+                list_validation.append(self.validators[rule](
+                    *self.make(validation.split('.')[1])))
+                continue
             if ":" in validation:
                 args = validation.split(':')[1].split(',')
                 validation = validation.split(':')[0]
