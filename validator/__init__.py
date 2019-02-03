@@ -730,8 +730,8 @@ class ValidationMapper:
             if ":" in validation:
                 args = validation.split(':')[1].split(',')
                 validation = validation.split(':')[0]
-                if hasattr(self, '{}_arg_rule'.format(validation)):
-                    args = getattr(self, '{}_arg_rule'.format(validation))(*args)
+                if hasattr(self, '{0}_arg_rule'.format(validation)):
+                    args = getattr(self, '{0}_arg_rule'.format(validation))(*args)
 
             if args:
                 validator = self.validators[validation](*args)
