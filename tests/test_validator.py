@@ -127,45 +127,24 @@ class TestValidator(object):
 
     def test_in_validator(self):
         validator = {
-            "truthiness": [Truthy()],
-            "falsiness": [Not(Truthy())]
+            "field": [In([1, 2, 3])]
         }
-        str_value = {
-            "truthiness": "test",
-            "falsiness": ""
-        }
-        int_value = {
-            "truthiness": 1,
-            "falsiness": 0
-        }
-        bool_value = {
-            "truthiness": True,
-            "falsiness": False
-        }
-        assert validate(validator, str_value)[0]
-        assert validate(validator, int_value)[0]
-        assert validate(validator, bool_value)[0]
+        passes = {"field": 1}
+        fails = {"field": 4}
+
+        assert validate(validator, passes)[0]
+        assert not validate(validator, fails)[0]
 
     def test_equals_validator(self):
         validator = {
-            "truthiness": [Truthy()],
-            "falsiness": [Not(Truthy())]
+            "truthiness": [Equals("bar")],
+            "falsiness": [Not(Equals("True"))]
         }
-        str_value = {
-            "truthiness": "test",
-            "falsiness": ""
+        test_case = {
+            "truthiness": "bar",
+            "falsiness": True
         }
-        int_value = {
-            "truthiness": 1,
-            "falsiness": 0
-        }
-        bool_value = {
-            "truthiness": True,
-            "falsiness": False
-        }
-        assert validate(validator, str_value)[0]
-        assert validate(validator, int_value)[0]
-        assert validate(validator, bool_value)[0]
+        assert validate(validator, test_case)[0]
 
     def test_not_validator(self):
         validator = {
