@@ -460,6 +460,58 @@ class If(Validator):
             dependent = self.then_clause(dictionary)
         return conditional, dependent
 
+class Or(Validator):
+    """
+    For Or logic verification
+
+    # Example:
+        validations = {
+            "foo": [Or(Equals(1), Blank())]
+        }
+        passes = {"foo": 1}
+        also_passes = {"foo":''}
+        fails = {"foo":"x",}
+    """
+    def __init__(self, *validators):
+        self.validators = validators
+        self.err_message = "must validate in {0}".format([item.err_message for item in validators])
+        self.not_message = "must not validate in {0}".format([item.not_message  for item in validators])
+
+    def __call__(self, field):
+        for validator in self.validators:
+            if validator(field):
+                return True
+        return False
+
+class And(Validator):
+    """
+    For And logic verification
+
+    Although a field itself supports 
+    multiple authentication conditions, 
+    it is not supported in the Or validator.
+
+    # Example:
+    validations = {
+        "foo": [Or(And(Url(), Length(14)),Blank())]
+    }
+    passes = {"foo": "http://vk.com"}
+    also_passes = {"foo":''}
+    fails = {"foo":"x",}
+    also_fails = {"foo":"http://github.com"}
+    """
+    def __init__(self, *validators):
+        self.validators = validators
+        self.err_message = "must validate all {0}".format([item.err_message for item in validators])
+        self.not_message = "must not validate all {0}".format([item.not_message  for item in validators])
+
+    def __call__(self, field):
+        for validator in self.validators:
+            if not validator(field):
+                # self.err_message = validator.err_message
+                return False
+        return True
+
 class Length(Validator):
     """
     Use to specify that the
